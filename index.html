@@ -15,12 +15,6 @@
         --text: #2e1e0f;
       }
 
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
       body {
         font-family: 'Inter', sans-serif;
         background-color: var(--bg);
@@ -109,18 +103,18 @@
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
-          if (!data.length) {
-            container.innerHTML = "<p>Nessun libro disponibile al momento.</p>";
+          if (!data || !Array.isArray(data) || !data.length) {
+            container.innerHTML = "<p>Nessun libro disponibile.</p>";
             return;
           }
 
           container.innerHTML = data.map(book => `
             <div class="card">
-              <img src="${book.cover || 'https://via.placeholder.com/200x300?text=Nessuna+Copertina'}" alt="Copertina libro">
-              <h2>${book.title}</h2>
-              <p><strong>Autore:</strong> ${book.author}</p>
+              <img src="${book.cover || 'https://via.placeholder.com/200x300?text=No+Cover'}" alt="Copertina libro">
+              <h2>${book.title || 'Titolo non disponibile'}</h2>
+              <p><strong>Autore:</strong> ${book.author || 'Autore sconosciuto'}</p>
               <p><strong>Categoria:</strong> ${book.categoria || 'Varie'}</p>
-              <p><strong>Data:</strong> ${book.releaseDate}</p>
+              <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
               <span class="badge">${book.origin === 'IT' ? '🇮🇹 Italia' : '🇺🇸 USA'}</span><br/>
               ${book.link_acquisto ? `<a href="${book.link_acquisto}" class="link-button" target="_blank">Compra</a>` : ''}
               ${book.annas_link ? `<a href="${book.annas_link}" class="link-button" target="_blank">Anna's Archive</a>` : '<span style="font-size:0.8rem; color:gray;">Anna's Archive assente</span>'}
@@ -128,8 +122,8 @@
           `).join('');
         })
         .catch(err => {
+          console.error("Errore caricamento JSON:", err);
           document.getElementById('book-grid').innerHTML = "<p>Errore nel caricamento dei dati.</p>";
-          console.error(err);
         });
     </script>
   </body>
