@@ -2,7 +2,7 @@ name: Update Books Data
 
 on:
   schedule:
-    - cron: '0 4 * * *' # ogni giorno alle 4:00 UTC
+    - cron: '0 4 * * *'
   workflow_dispatch:
 
 jobs:
