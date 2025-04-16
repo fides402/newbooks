@@ -13,6 +13,7 @@
         --accent: #d9a066;
         --card: #fff9e6;
         --text: #2e1e0f;
+        --error: #b00020;
       }
 
       body {
@@ -92,22 +93,42 @@
       .link-button:hover {
         background-color: var(--secondary);
       }
+
+      .debug {
+        color: var(--error);
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
     </style>
   </head>
   <body>
     <h1>📚 Novità Libri - Ultimi 30 Giorni</h1>
+    <div id="debug" class="debug"></div>
     <div class="grid" id="book-grid"></div>
 
     <script>
+      const debugBox = document.getElementById('debug');
+
       fetch('./data/books.json?v=' + Date.now())
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) {
+            throw new Error("Errore nel fetch: " + res.status);
+          }
+          return res.json();
+        })
         .then(data => {
-          const container = document.getElementById('book-grid');
-          if (!data || !Array.isArray(data) || !data.length) {
-            container.innerHTML = "<p>Nessun libro disponibile.</p>";
+          console.log("📦 books.json contenuto:", data);
+          if (!Array.isArray(data)) {
+            debugBox.innerText = "❗ Formato JSON non valido (non è un array)";
             return;
           }
 
+          if (data.length === 0) {
+            debugBox.innerText = "❗ Nessun libro trovato nel file JSON";
+            return;
+          }
+
+          const container = document.getElementById('book-grid');
           container.innerHTML = data.map(book => `
             <div class="card">
               <img src="${book.cover || 'https://via.placeholder.com/200x300?text=No+Cover'}" alt="Copertina libro">
@@ -122,8 +143,8 @@
           `).join('');
         })
         .catch(err => {
-          console.error("Errore caricamento JSON:", err);
-          document.getElementById('book-grid').innerHTML = "<p>Errore nel caricamento dei dati.</p>";
+          debugBox.innerText = "❗ Errore nel caricamento JSON: " + err.message;
+          console.error("❗ Errore:", err);
         });
     </script>
   </body>
