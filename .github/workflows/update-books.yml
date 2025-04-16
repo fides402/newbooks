@@ -2,7 +2,7 @@ name: Update Books Data
 
 on:
   schedule:
-    - cron: '0 4 * * *' # Ogni giorno alle 4:00 UTC
+    - cron: '0 4 * * *' # ogni giorno alle 4:00 UTC
   workflow_dispatch:
 
 jobs:
@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install requests
+          pip install requests beautifulsoup4
 
       - name: Run scraper script
         run: python scripts/update_books.py
@@ -33,4 +33,3 @@ jobs:
           git add data/books.json
           git commit -m "Update book list"
           git push
-
