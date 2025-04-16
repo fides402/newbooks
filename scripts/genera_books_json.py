@@ -27,12 +27,13 @@ if os.path.exists(AMERICAN_CSV):
 if df_list:
     df_all = pd.concat(df_list, ignore_index=True)
     df_all["releaseDate"] = pd.Timestamp.today().strftime("%Y-%m-%d")
-    df_all["cover"] = ""  # Se vuoi aggiungerlo in futuro
+    df_all["cover"] = ""
+    df_all["annas_link"] = ""
     df_all = df_all.fillna("")
 
     with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
         json.dump(df_all.to_dict(orient="records"), f, ensure_ascii=False, indent=2)
 
-    print(f"[✓] Creato {OUTPUT_JSON}")
+    print(f"[✓] Creato {OUTPUT_JSON} come array JSON")
 else:
     print("[!] Nessun CSV trovato. JSON non creato.")
