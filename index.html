@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -36,14 +36,14 @@
 
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 1.5rem;
       }
 
       .card {
         background-color: var(--card);
         border-radius: 16px;
-        padding: 1.5rem;
+        padding: 1rem;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         transition: transform 0.2s;
       }
@@ -52,9 +52,16 @@
         transform: translateY(-4px);
       }
 
+      .card img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+      }
+
       .card h2 {
-        font-size: 1.25rem;
-        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        margin-bottom: 0.4rem;
         color: var(--primary);
       }
 
@@ -62,12 +69,22 @@
         font-size: 0.9rem;
         line-height: 1.4;
         color: var(--secondary);
-        margin-bottom: 0.3rem;
+        margin-bottom: 0.2rem;
+      }
+
+      .badge {
+        display: inline-block;
+        background-color: var(--accent);
+        color: var(--bg);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        margin-top: 4px;
       }
     </style>
   </head>
   <body>
-    <h1>📚 Nuove Uscite - Libri Psicologia, Business, Self Help, Filosofia</h1>
+    <h1>📚 Nuove Uscite Libri (IT 🇮🇹 & US 🇺🇸)</h1>
     <div class="grid" id="book-grid"></div>
 
     <script>
@@ -77,10 +94,11 @@
           const container = document.getElementById('book-grid');
           container.innerHTML = data.map(book => `
             <div class="card">
+              <img src="${book.cover}" alt="Copertina libro">
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author}</p>
-              <p><strong>Categoria:</strong> ${book.category}</p>
-              <p><strong>Data di uscita:</strong> ${book.releaseDate}</p>
+              <p><strong>Data:</strong> ${book.releaseDate}</p>
+              <span class="badge">${book.origin === 'IT' ? '🇮🇹 Italia' : '🇺🇸 USA'}</span>
             </div>
           `).join('');
         });
