@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nuove Uscite Libri</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #fdf6e3;
+        --primary: #382110;
+        --secondary: #7b5934;
+        --accent: #d9a066;
+        --card: #fff9e6;
+        --text: #2e1e0f;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        padding: 2rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .card {
+        background-color: var(--card);
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+      }
+
+      .card h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary);
+      }
+
+      .card p {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: var(--secondary);
+        margin-bottom: 0.3rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📚 Nuove Uscite - Libri Psicologia, Business, Self Help, Filosofia</h1>
+    <div class="grid" id="book-grid"></div>
+
+    <script>
+      fetch('./data/books.json')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('book-grid');
+          container.innerHTML = data.map(book => `
+            <div class="card">
+              <h2>${book.title}</h2>
+              <p><strong>Autore:</strong> ${book.author}</p>
+              <p><strong>Categoria:</strong> ${book.category}</p>
+              <p><strong>Data di uscita:</strong> ${book.releaseDate}</p>
+            </div>
+          `).join('');
+        });
+    </script>
+  </body>
+</html>
