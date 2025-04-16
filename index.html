@@ -92,6 +92,7 @@
         border-radius: 8px;
         text-decoration: none;
         font-size: 0.8rem;
+        margin-right: 6px;
       }
 
       .link-button:hover {
@@ -104,7 +105,7 @@
     <div class="grid" id="book-grid"></div>
 
     <script>
-      fetch('./data/books.json')
+      fetch('./data/books.json?v=' + Date.now())
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
@@ -122,6 +123,7 @@
               <p><strong>Data:</strong> ${book.releaseDate}</p>
               <span class="badge">${book.origin === 'IT' ? '🇮🇹 Italia' : '🇺🇸 USA'}</span><br/>
               ${book.link_acquisto ? `<a href="${book.link_acquisto}" class="link-button" target="_blank">Compra</a>` : ''}
+              ${book.annas_link ? `<a href="${book.annas_link}" class="link-button" target="_blank">Anna's Archive</a>` : '<span style="font-size:0.8rem; color:gray;">Anna's Archive assente</span>'}
             </div>
           `).join('');
         })
