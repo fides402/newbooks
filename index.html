@@ -56,12 +56,6 @@
       margin-bottom: 1rem;
     }
 
-    .card h3 {
-      font-size: 1rem;
-      margin: 0.3rem 0;
-      font-weight: 600;
-    }
-
     .card p {
       font-size: 0.9rem;
       margin: 0.2rem 0;
@@ -98,11 +92,23 @@
       "saba type beat"
     ];
 
+    function getTwoDaysAgoRange() {
+      const now = new Date();
+      const start = new Date(now);
+      start.setDate(start.getDate() - 2);
+      start.setHours(0, 0, 0, 0);
+
+      const end = new Date(start);
+      end.setDate(end.getDate() + 1); // fine del giorno
+
+      return { start, end };
+    }
+
     async function fetchBeats() {
       const container = document.getElementById("results");
       container.innerHTML = "";
 
-      const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
+      const { start, end } = getTwoDaysAgoRange();
 
       for (let keyword of KEYWORDS) {
         const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=25&order=viewCount&key=${API_KEY}`);
@@ -122,7 +128,12 @@
           const publishedAt = new Date(videoData.snippet.publishedAt);
           const title = videoData.snippet.title.toLowerCase();
 
-          if (publishedAt >= twoDaysAgo && title.includes(keyword.toLowerCase())) {
+          // deve essere pubblicato esattamente 2 giorni fa e contenere la keyword nel titolo
+          if (
+            publishedAt >= start &&
+            publishedAt < end &&
+            title.includes(keyword.toLowerCase())
+          ) {
             filteredVideos.push({
               videoId,
               title: videoData.snippet.title,
