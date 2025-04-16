@@ -23,13 +23,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 pandas python-docx
 
-      - name: Run unified scraping script
+      - name: Run unified scraping + JSON generation
         run: python scripts/update_books.py
 
       - name: Commit and push updates
         run: |
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
-          git add *.csv *.docx
-          git commit -m "Aggiornamento libri ultimi 30 giorni"
+          git add *.csv *.docx data/books.json
+          git commit -m "Aggiornamento libri + JSON"
           git push
