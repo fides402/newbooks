@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Novità Libri - Ultimi 30 Giorni</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --bg: #fdf6e3;
+        --primary: #382110;
+        --secondary: #7b5934;
+        --accent: #d9a066;
+        --card: #fff9e6;
+        --text: #2e1e0f;
+      }
+
+      body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--bg);
+        color: var(--text);
+        padding: 2rem;
+      }
+
+      h1 {
+        font-size: 2.2rem;
+        margin-bottom: 1rem;
+        color: var(--primary);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .card {
+        background-color: var(--card);
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transition: transform 0.2s;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+      }
+
+      .card img {
+        width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin-bottom: 0.75rem;
+        object-fit: cover;
+      }
+
+      .card h2 {
+        font-size: 1.1rem;
+        margin-bottom: 0.4rem;
+        color: var(--primary);
+      }
+
+      .card p {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        color: var(--secondary);
+        margin-bottom: 0.2rem;
+      }
+
+      .badge {
+        display: inline-block;
+        background-color: var(--accent);
+        color: var(--bg);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        margin-top: 4px;
+      }
+
+      .link-button {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 8px;
+        background-color: var(--primary);
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        margin-right: 6px;
+      }
+
+      .link-button:hover {
+        background-color: var(--secondary);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>📚 Novità Libri - Ultimi 30 Giorni</h1>
+    <div class="grid" id="book-grid"></div>
+
+    <script>
+      fetch('./data/books.json?v=' + Date.now())
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('book-grid');
+          if (!data || !Array.isArray(data) || !data.length) {
+            container.innerHTML = "<p>Nessun libro disponibile.</p>";
+            return;
+          }
+
+          container.innerHTML = data.map(book => `
+            <div class="card">
+              <img src="${book.cover || 'https://via.placeholder.com/200x300?text=No+Cover'}" alt="Copertina libro">
+              <h2>${book.title || 'Titolo non disponibile'}</h2>
+              <p><strong>Autore:</strong> ${book.author || 'Autore sconosciuto'}</p>
+              <p><strong>Categoria:</strong> ${book.categoria || 'Varie'}</p>
+              <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
+              <span class="badge">${book.origin === 'IT' ? '🇮🇹 Italia' : '🇺🇸 USA'}</span><br/>
+              ${book.link_acquisto ? `<a href="${book.link_acquisto}" class="link-button" target="_blank">Compra</a>` : ''}
+              ${book.annas_link ? `<a href="${book.annas_link}" class="link-button" target="_blank">Anna's Archive</a>` : '<span style="font-size:0.8rem; color:gray;">Anna's Archive assente</span>'}
+            </div>
+          `).join('');
+        })
+        .catch(err => {
+          console.error("Errore caricamento JSON:", err);
+          document.getElementById('book-grid').innerHTML = "<p>Errore nel caricamento dei dati.</p>";
+        });
+    </script>
+  </body>
+</html>
