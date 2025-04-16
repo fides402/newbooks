@@ -92,32 +92,31 @@
       "saba type beat"
     ];
 
-    function getTwoDaysAgo() {
-      const twoDaysAgo = new Date();
-      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
-      return twoDaysAgo;
+    function getTwoDaysAgoDate() {
+      const now = new Date();
+      now.setDate(now.getDate() - 2);
+      return now;
     }
 
     async function fetchBeats() {
       const container = document.getElementById("results");
       container.innerHTML = "";
 
-      const cutoffDate = getTwoDaysAgo();
+      const cutoff = getTwoDaysAgoDate();
 
       for (let keyword of KEYWORDS) {
         try {
-          const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=25&order=date&key=${API_KEY}`);
+          const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=50&order=viewCount&key=${API_KEY}`);
           const searchData = await searchRes.json();
           if (!searchData.items) continue;
 
-          let filteredVideos = [];
+          const candidates = [];
 
           for (const item of searchData.items) {
             const videoId = item.id.videoId;
             const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${API_KEY}`);
             const statsData = await statsRes.json();
             const video = statsData.items?.[0];
-
             if (!video) continue;
 
             const publishedAt = new Date(video.snippet.publishedAt);
@@ -125,11 +124,11 @@
             const views = parseInt(video.statistics.viewCount || "0");
 
             if (
-              publishedAt >= cutoffDate &&
+              publishedAt >= cutoff &&
               title.includes(keyword.toLowerCase()) &&
               views >= 2000
             ) {
-              filteredVideos.push({
+              candidates.push({
                 videoId,
                 title: video.snippet.title,
                 channel: video.snippet.channelTitle,
@@ -138,12 +137,12 @@
             }
           }
 
-          if (filteredVideos.length === 0) continue;
+          if (candidates.length === 0) continue;
 
-          filteredVideos.sort((a, b) => b.views - a.views);
-          filteredVideos = filteredVideos.slice(0, 3);
+          candidates.sort((a, b) => b.views - a.views);
+          const topVideos = candidates.slice(0, 3);
 
-          for (let video of filteredVideos) {
+          for (let video of topVideos) {
             container.innerHTML += `
               <div class="card">
                 <iframe src="https://www.youtube.com/embed/${video.videoId}" frameborder="0" allowfullscreen></iframe>
@@ -153,13 +152,14 @@
               </div>
             `;
           }
-        } catch (error) {
-          console.error("Errore con la keyword:", keyword, error);
+
+        } catch (err) {
+          console.error("Errore su keyword:", keyword, err);
         }
       }
 
       if (container.innerHTML === "") {
-        container.innerHTML = "<p style='text-align:center; font-size:1.1rem;'>Nessun video trovato negli ultimi 2 giorni con almeno 2000 views.</p>";
+        container.innerHTML = "<p style='text-align:center; font-size:1.1rem;'>Nessun video trovato con almeno 2000 views negli ultimi 2 giorni.</p>";
       }
     }
   </script>
