@@ -102,41 +102,42 @@
       const container = document.getElementById("results");
       container.innerHTML = "";
 
-      const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
+      const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
       for (let keyword of KEYWORDS) {
-        const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=25&order=date&key=${API_KEY}`);
+        const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=25&order=viewCount&key=${API_KEY}`);
         const searchData = await searchRes.json();
         if (!searchData.items) continue;
 
-        let filteredVideos = searchData.items.filter(item => {
-          const publishedAt = item.snippet.publishedAt;
-          const title = item.snippet.title.toLowerCase();
-          return (
-            new Date(publishedAt) >= new Date(twoDaysAgo) &&
-            title.includes(keyword.toLowerCase())
-          );
-        });
+        let filteredVideos = [];
+
+        for (const item of searchData.items) {
+          const videoId = item.id.videoId;
+          const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${API_KEY}`);
+          const statsData = await statsRes.json();
+          const videoData = statsData.items[0];
+
+          if (!videoData) continue;
+
+          const publishedAt = new Date(videoData.snippet.publishedAt);
+          const title = videoData.snippet.title.toLowerCase();
+
+          if (publishedAt >= twoDaysAgo && title.includes(keyword.toLowerCase())) {
+            filteredVideos.push({
+              videoId,
+              title: videoData.snippet.title,
+              channel: videoData.snippet.channelTitle,
+              views: parseInt(videoData.statistics.viewCount || "0")
+            });
+          }
+        }
 
         if (filteredVideos.length === 0) continue;
 
-        let videos = await Promise.all(filteredVideos.map(async (item) => {
-          const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${item.id.videoId}&key=${API_KEY}`);
-          const statsData = await statsRes.json();
-          const stats = statsData.items[0]?.statistics || { viewCount: "0" };
+        filteredVideos.sort((a, b) => b.views - a.views);
+        filteredVideos = filteredVideos.slice(0, 3);
 
-          return {
-            videoId: item.id.videoId,
-            title: item.snippet.title,
-            channel: item.snippet.channelTitle,
-            views: parseInt(stats.viewCount)
-          };
-        }));
-
-        videos.sort((a, b) => b.views - a.views);
-        videos = videos.slice(0, 3);
-
-        for (let video of videos) {
+        for (let video of filteredVideos) {
           container.innerHTML += `
             <div class="card">
               <iframe src="https://www.youtube.com/embed/${video.videoId}" frameborder="0" allowfullscreen></iframe>
