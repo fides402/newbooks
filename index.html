@@ -56,6 +56,12 @@
       margin-bottom: 1rem;
     }
 
+    .card h3 {
+      font-size: 1rem;
+      margin: 0.3rem 0;
+      font-weight: 600;
+    }
+
     .card p {
       font-size: 0.9rem;
       margin: 0.2rem 0;
@@ -92,78 +98,55 @@
       "saba type beat"
     ];
 
-    function getTwoDaysAgoRange() {
-      const now = new Date();
-      const start = new Date(now);
-      start.setDate(start.getDate() - 2);
-      start.setHours(0, 0, 0, 0);
-
-      const end = new Date(start);
-      end.setDate(end.getDate() + 1);
-      return { start, end };
-    }
-
     async function fetchBeats() {
       const container = document.getElementById("results");
       container.innerHTML = "";
 
-      const { start, end } = getTwoDaysAgoRange();
+      const twoDaysAgo = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000);
 
       for (let keyword of KEYWORDS) {
-        try {
-          const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=25&order=viewCount&key=${API_KEY}`);
-          const searchData = await searchRes.json();
-          if (!searchData.items) continue;
+        const searchRes = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${encodeURIComponent(keyword)}&type=video&maxResults=25&order=viewCount&key=${API_KEY}`);
+        const searchData = await searchRes.json();
+        if (!searchData.items) continue;
 
-          let filteredVideos = [];
+        let filteredVideos = [];
 
-          for (const item of searchData.items) {
-            const videoId = item.id.videoId;
-            const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${API_KEY}`);
-            const statsData = await statsRes.json();
-            const video = statsData.items?.[0];
+        for (const item of searchData.items) {
+          const videoId = item.id.videoId;
+          const statsRes = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoId}&key=${API_KEY}`);
+          const statsData = await statsRes.json();
+          const videoData = statsData.items[0];
 
-            if (!video) continue;
+          if (!videoData) continue;
 
-            const publishedAt = new Date(video.snippet.publishedAt);
-            const title = video.snippet.title.toLowerCase();
+          const publishedAt = new Date(videoData.snippet.publishedAt);
+          const title = videoData.snippet.title.toLowerCase();
 
-            if (
-              publishedAt >= start &&
-              publishedAt < end &&
-              title.includes(keyword.toLowerCase())
-            ) {
-              filteredVideos.push({
-                videoId,
-                title: video.snippet.title,
-                channel: video.snippet.channelTitle,
-                views: parseInt(video.statistics.viewCount || "0")
-              });
-            }
+          if (publishedAt >= twoDaysAgo && title.includes(keyword.toLowerCase())) {
+            filteredVideos.push({
+              videoId,
+              title: videoData.snippet.title,
+              channel: videoData.snippet.channelTitle,
+              views: parseInt(videoData.statistics.viewCount || "0")
+            });
           }
-
-          if (filteredVideos.length === 0) continue;
-
-          filteredVideos.sort((a, b) => b.views - a.views);
-          filteredVideos = filteredVideos.slice(0, 3);
-
-          for (let video of filteredVideos) {
-            container.innerHTML += `
-              <div class="card">
-                <iframe src="https://www.youtube.com/embed/${video.videoId}" frameborder="0" allowfullscreen></iframe>
-                <p><strong>${video.title}</strong></p>
-                <p>👁️ ${video.views.toLocaleString()} views</p>
-                <p>🎤 ${video.channel}</p>
-              </div>
-            `;
-          }
-        } catch (error) {
-          console.error("Errore con la keyword:", keyword, error);
         }
-      }
 
-      if (container.innerHTML === "") {
-        container.innerHTML = "<p style='text-align:center; font-size:1.1rem;'>Nessun video trovato esattamente 2 giorni fa con queste keyword.</p>";
+        if (filteredVideos.length === 0) continue;
+
+        filteredVideos.sort((a, b) => b.views - a.views);
+        filteredVideos = filteredVideos.slice(0, 3);
+
+        for (let video of filteredVideos) {
+          container.innerHTML += `
+            <div class="card">
+              <iframe src="https://www.youtube.com/embed/${video.videoId}" frameborder="0" allowfullscreen></iframe>
+              <p><strong>${video.title}</strong></p>
+              <p>👁️ ${video.views.toLocaleString()} views</p>
+              <p>🎤 ${video.channel}</p>
+            </div>
+          `;
+        }
       }
     }
   </script>
