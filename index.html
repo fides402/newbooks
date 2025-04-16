@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nuove Uscite Libri</title>
+    <title>Novità Libri - Ultimi 30 Giorni</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
       :root {
@@ -29,7 +29,7 @@
       }
 
       h1 {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
         margin-bottom: 1rem;
         color: var(--primary);
       }
@@ -57,6 +57,7 @@
         height: auto;
         border-radius: 10px;
         margin-bottom: 0.75rem;
+        object-fit: cover;
       }
 
       .card h2 {
@@ -81,10 +82,25 @@
         font-size: 0.75rem;
         margin-top: 4px;
       }
+
+      .link-button {
+        display: inline-block;
+        margin-top: 8px;
+        padding: 4px 8px;
+        background-color: var(--primary);
+        color: #fff;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.8rem;
+      }
+
+      .link-button:hover {
+        background-color: var(--secondary);
+      }
     </style>
   </head>
   <body>
-    <h1>📚 Nuove Uscite Libri (IT 🇮🇹 & US 🇺🇸)</h1>
+    <h1>📚 Novità Libri - Ultimi 30 Giorni</h1>
     <div class="grid" id="book-grid"></div>
 
     <script>
@@ -92,15 +108,26 @@
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
+          if (!data.length) {
+            container.innerHTML = "<p>Nessun libro disponibile al momento.</p>";
+            return;
+          }
+
           container.innerHTML = data.map(book => `
             <div class="card">
-              <img src="${book.cover}" alt="Copertina libro">
+              <img src="${book.cover || 'https://via.placeholder.com/200x300?text=Nessuna+Copertina'}" alt="Copertina libro">
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author}</p>
+              <p><strong>Categoria:</strong> ${book.categoria || 'Varie'}</p>
               <p><strong>Data:</strong> ${book.releaseDate}</p>
-              <span class="badge">${book.origin === 'IT' ? '🇮🇹 Italia' : '🇺🇸 USA'}</span>
+              <span class="badge">${book.origin === 'IT' ? '🇮🇹 Italia' : '🇺🇸 USA'}</span><br/>
+              ${book.link_acquisto ? `<a href="${book.link_acquisto}" class="link-button" target="_blank">Compra</a>` : ''}
             </div>
           `).join('');
+        })
+        .catch(err => {
+          document.getElementById('book-grid').innerHTML = "<p>Errore nel caricamento dei dati.</p>";
+          console.error(err);
         });
     </script>
   </body>
