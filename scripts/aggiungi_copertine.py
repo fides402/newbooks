@@ -3,7 +3,7 @@ import os
 import requests
 from urllib.parse import quote
 
-API_KEY = "AIzaSyBVtXwnVXilsNqLx6of2HG2jiYwAWs-btg"
+API_KEY = "AIzaSyBVtXwnVXilsNqLx6of2HG2jiYwAWs-btg"  # Chiave API inserita
 BOOKS_PATH = os.path.join(os.path.dirname(__file__), "../data/books.json")
 
 def get_cover_from_google(title, author):
@@ -36,7 +36,7 @@ def enrich_books_with_covers():
 
     with open(BOOKS_PATH, "w", encoding="utf-8") as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
-        print("[✓] books.json aggiornato con copertine reali")
+        print("[✓] books.json aggiornato con copertine")
 
 if __name__ == "__main__":
     enrich_books_with_covers()
