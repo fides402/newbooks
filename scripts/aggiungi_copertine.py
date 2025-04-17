@@ -3,77 +3,31 @@ import json
 import time
 import requests
 import re
-from urllib.parse import quote
-from bs4 import BeautifulSoup
+from lxml import html
 
 BOOKS_PATH = os.path.join(os.path.dirname(__file__), "../data/books.json")
 
-def extract_cover_from_page(book_url, headers):
+# XPath fornito dall'utente per la copertina nel carosello
+COVER_XPATH = '//*[@id="slick-slide10"]/div/img'
+
+def extract_cover_with_xpath(page_url, headers):
     try:
-        res = requests.get(book_url, headers=headers, timeout=15)
-        res.raise_for_status()
-        soup = BeautifulSoup(res.text, "html.parser")
+        res = requests.get(page_url, headers=headers, timeout=15)
+        tree = html.fromstring(res.content)
 
-        # Priorità 1: immagine diretta nella pagina
-        img = soup.select_one('img.cc-img[src$=".jpg"]')
-        if img and img.get("src"):
-            src = img["src"]
-            if not src.startswith("http"):
-                src = "https://www.ibs.it" + src
-            return src
-
-        # Priorità 2: meta og:image
-        og = soup.select_one('meta[property="og:image"]')
-        if og and og.get("content", "").endswith(".jpg"):
-            return og["content"]
-
-        # Priorità 3: fallback regex su tutto l'HTML
-        img_match = re.search(r'<img[^>]*src="([^"]+/images/[^"]+\.jpg)"', res.text)
-        if img_match:
-            src = img_match.group(1)
-            if not src.startswith("http"):
-                src = "https://www.ibs.it" + src
-            return src
-
+        # Cerca l'immagine con XPath
+        img_elements = tree.xpath(COVER_XPATH)
+        for img in img_elements:
+            src = img.get("src")
+            if src and ".jpg" in src:
+                if not src.startswith("http"):
+                    src = "https://www.ibs.it" + src
+                return src
     except Exception as e:
-        print(f"Errore nel parsing HTML della pagina del libro: {e}")
+        print(f"Errore nell'estrazione via XPath: {e}")
     return ""
 
-def get_cover_from_ibs_by_scraping(title, author):
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Accept-Language": "it-IT,it;q=0.9"
-    }
-
-    query = f"{title} {author}".strip()
-    search_url = f"https://www.ibs.it/search/?ts=as&query={quote(query)}"
-
-    try:
-        res = requests.get(search_url, headers=headers, timeout=15)
-        res.raise_for_status()
-        soup = BeautifulSoup(res.text, "html.parser")
-        items = soup.select(".search-item-book")
-
-        if not items:
-            print(f"❌ Nessun risultato per: {title}")
-            return ""
-
-        for item in items[:5]:
-            a = item.select_one(".description a")
-            href = a["href"] if a and a.get("href") else ""
-            if not href:
-                continue
-            full_url = href if href.startswith("http") else "https://www.ibs.it" + href
-            cover = extract_cover_from_page(full_url, headers)
-            if cover:
-                print(f"✅ Copertina trovata per '{title}': {cover}")
-                return cover
-
-    except Exception as e:
-        print(f"Errore nella ricerca IBS: {e}")
-    return ""
-
-def enrich_books_with_direct_scraping():
+def enrich_books_using_xpath():
     if not os.path.exists(BOOKS_PATH):
         print("❌ File non trovato:", BOOKS_PATH)
         return
@@ -81,24 +35,29 @@ def enrich_books_with_direct_scraping():
     with open(BOOKS_PATH, "r", encoding="utf-8") as f:
         books = json.load(f)
 
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept-Language": "it-IT,it;q=0.9"
+    }
+
     for i, book in enumerate(books, start=1):
         title = book.get("title", "")
-        author = book.get("author", "")
-        if not title or book.get("cover"):
+        ibs_url = book.get("ibs_url", "")
+        if not title or not ibs_url or book.get("cover"):
             print(f"[{i}] Skip: {title}")
             continue
 
-        print(f"[{i}] Cerco copertina per: {title}")
-        cover = get_cover_from_ibs_by_scraping(title, author)
+        print(f"[{i}] Estrazione copertina da XPath per: {title}")
+        cover = extract_cover_with_xpath(ibs_url, headers)
         if cover:
             book["cover"] = cover
+            print(f"✅ Copertina trovata: {cover}")
         else:
-            print(f"❌ Nessuna copertina trovata per: {title}")
+            print(f"❌ Copertina non trovata via XPath per: {title}")
 
         with open(BOOKS_PATH, "w", encoding="utf-8") as f:
             json.dump(books, f, ensure_ascii=False, indent=2)
-
         time.sleep(2)
 
 if __name__ == "__main__":
-    enrich_books_with_direct_scraping()
+    enrich_books_using_xpath()
