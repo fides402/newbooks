@@ -65,7 +65,7 @@
         return base + "q=" + encodeURIComponent(query.trim());
       }
 
-      fetch('./books.json')
+      fetch('./networks/data/books.json')
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
