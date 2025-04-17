@@ -9,7 +9,7 @@ BOOKS_PATH = os.path.join(os.path.dirname(__file__), "../data/books.json")
 
 def get_cover_from_bing(title, author):
     query = f"{title} {author} copertina libro"
-    url = f"https://www.bing.com/images/search?q={quote(query)}&form=HDRSC2"
+    url = f"https://www.bing.com/images/search?q={quote(query)}"
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
