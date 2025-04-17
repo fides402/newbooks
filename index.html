@@ -3,113 +3,70 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Novità Libri - Ultimi 30 Giorni</title>
+    <title>📚 Novità Libri</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-      :root {
-        --bg: #fdf6e3;
-        --primary: #382110;
-        --secondary: #7b5934;
-        --accent: #d9a066;
-        --card: #fff9e6;
-        --text: #2e1e0f;
-      }
-
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-      }
-
       body {
         font-family: 'Inter', sans-serif;
-        background-color: var(--bg);
-        color: var(--text);
+        background: #fdf6e3;
+        color: #2e1e0f;
         padding: 2rem;
       }
-
       h1 {
-        font-size: 2.2rem;
+        font-size: 2rem;
         margin-bottom: 1rem;
-        color: var(--primary);
       }
-
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-        gap: 1.5rem;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
       }
-
       .card {
-        background-color: var(--card);
+        background: #fff9e6;
         border-radius: 16px;
         padding: 1rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transition: transform 0.2s;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       }
-
-      .card:hover {
-        transform: translateY(-4px);
-      }
-
       .card img {
         width: 100%;
         height: auto;
-        border-radius: 10px;
-        margin-bottom: 0.75rem;
-        object-fit: cover;
+        border-radius: 12px;
+        margin-bottom: 0.5rem;
       }
-
       .card h2 {
         font-size: 1.1rem;
-        margin-bottom: 0.4rem;
-        color: var(--primary);
+        margin-bottom: 0.3rem;
       }
-
       .card p {
+        margin: 0.2rem 0;
         font-size: 0.9rem;
-        line-height: 1.4;
-        color: var(--secondary);
-        margin-bottom: 0.2rem;
       }
-
-      .badge {
-        display: inline-block;
-        background-color: var(--accent);
-        color: var(--bg);
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 0.75rem;
-        margin-top: 4px;
-      }
-
       .link-button {
         display: inline-block;
-        margin-top: 8px;
-        padding: 4px 8px;
-        background-color: var(--primary);
+        margin-top: 0.5rem;
+        padding: 5px 10px;
+        background-color: #382110;
         color: #fff;
         border-radius: 8px;
-        text-decoration: none;
         font-size: 0.8rem;
+        text-decoration: none;
       }
-
       .link-button:hover {
-        background-color: var(--secondary);
+        background-color: #7b5934;
       }
     </style>
   </head>
   <body>
-    <h1>📚 Novità Libri - Ultimi 30 Giorni</h1>
-    <div class="grid" id="book-grid"></div>
+    <h1>📚 Novità Libri</h1>
+    <div class="grid" id="book-grid">Caricamento...</div>
 
     <script>
-      fetch('./data/books.json')
+      fetch('./data/books.json?v=' + Date.now())
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
-          if (!data.length) {
-            container.innerHTML = "<p>Nessun libro disponibile al momento.</p>";
+          if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p>Nessun libro trovato.</p>';
             return;
           }
 
@@ -118,15 +75,14 @@
               <img src="${book.cover || 'https://via.placeholder.com/200x300?text=Nessuna+Copertina'}" alt="Copertina libro">
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author}</p>
-              <p><strong>Categoria:</strong> ${book.categoria || 'Varie'}</p>
+              <p><strong>Categoria:</strong> ${book.categoria}</p>
               <p><strong>Data:</strong> ${book.releaseDate}</p>
-              <span class="badge">${book.origin === 'IT' ? '🇮🇹 Italia' : '🇺🇸 USA'}</span><br/>
-              ${book.link_acquisto ? `<a href="${book.link_acquisto}" class="link-button" target="_blank">Compra</a>` : ''}
+              ${book.annas_link ? `<a class="link-button" href="${book.annas_link}" target="_blank">Anna's Archive</a>` : ''}
             </div>
           `).join('');
         })
         .catch(err => {
-          document.getElementById('book-grid').innerHTML = "<p>Errore nel caricamento dei dati.</p>";
+          document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
           console.error(err);
         });
     </script>
