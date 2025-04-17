@@ -7,7 +7,7 @@ from urllib.parse import quote_plus, urljoin
 from concurrent.futures import ThreadPoolExecutor
 import re
 
-BOOKS_PATH = os.path.join(os.path.dirname(__file__), "books.json")
+BOOKS_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "books.json")
 
 def sanitize_filename(filename):
     return re.sub(r'[\/*?:"<>|]', "", filename)
