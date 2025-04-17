@@ -8,64 +8,67 @@
   <style>
     body {
       font-family: 'Inter', sans-serif;
-      background: #fef9ec;
+      background: #fdf6e3;
       color: #2e1e0f;
       padding: 2rem;
     }
-
-    .logo {
-      max-height: 200px;
+    .header {
+      display: flex;
+      align-items: center;
       margin-bottom: 2rem;
     }
-
+    .header img {
+      height: 160px;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
       gap: 1rem;
     }
-
     .card {
       background: #fff9e6;
       border-radius: 16px;
       padding: 1rem;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
     }
-
     .card img {
       width: auto;
       max-height: 300px;
+      object-fit: contain;
       margin-bottom: 0.8rem;
       border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
     .card h2 {
       font-size: 1.1rem;
       margin: 0.2rem 0;
     }
-
     .card p {
       margin: 0.1rem 0;
       font-size: 0.9rem;
     }
-
     .link-button {
       margin-top: 0.5rem;
-      padding: 6px 12px;
-      background-color: #3e2a1a;
+      padding: 5px 10px;
+      background-color: #382110;
       color: #fff;
       border-radius: 8px;
+      font-size: 0.8rem;
       text-decoration: none;
-      font-size: 0.85rem;
     }
-
     .link-button:hover {
       background-color: #7b5934;
     }
   </style>
 </head>
 <body>
-  <img src="logo.png" alt="Logo" class="logo" />
+  <div class="header">
+    <img src="logo_nuovi_libri.png" alt="Logo">
+  </div>
 
   <div class="grid" id="book-grid">Caricamento...</div>
 
@@ -74,7 +77,6 @@
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('book-grid');
-
         if (!Array.isArray(data) || data.length === 0) {
           container.innerHTML = '<p>Nessun libro trovato.</p>';
           return;
@@ -90,18 +92,18 @@
 
         container.innerHTML = uniqueBooks.map(book => `
           <div class="card">
-            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina">
+            <img src="${book.cover || ''}" alt="Copertina di ${book.title}">
             <h2>${book.title}</h2>
             <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
             <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
             <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            <a class="link-button" href="${book.annas_link || '#'}" target="_blank">Anna's Archive</a>
+            ${book.annas_link ? `<a class="link-button" href="${book.annas_link}" target="_blank">Anna's Archive</a>` : ''}
           </div>
         `).join('');
       })
-      .catch(error => {
-        console.error("Errore nel caricamento dei dati:", error);
+      .catch(err => {
         document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
+        console.error(err);
       });
   </script>
 </body>
