@@ -36,6 +36,7 @@ def process_book(book):
 
     if not cover_url:
         print(f"[⏭] Nessuna copertina da scaricare per: {title}")
+        print(f"     ↳ cover: {book.get('cover')}, cover_url: {book.get('cover_url')}")
         return
 
     file_name = f"{sanitize_filename(title)}_{sanitize_filename(author)}.jpg"
