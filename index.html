@@ -64,7 +64,16 @@
             return;
           }
 
-          container.innerHTML = data.map(book => `
+          // Rimuovi duplicati basati su titolo + autore
+          const seen = new Set();
+          const uniqueBooks = data.filter(book => {
+            const key = (book.title + '|' + book.author).toLowerCase();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+
+          container.innerHTML = uniqueBooks.map(book => `
             <div class="card">
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author}</p>
