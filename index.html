@@ -58,7 +58,10 @@
     <script>
       function generateAnnaLink(book) {
         const base = "https://annas-archive.org/search?";
-        const query = book.author ? `${book.title} ${book.author}` : book.title;
+        const cleanTitle = book.title || '';
+        const cleanAuthor = book.author && !book.author.toLowerCase().includes("autore non disponibile")
+          ? ` ${book.author}` : '';
+        const query = (cleanTitle + cleanAuthor).trim();
         return base + "q=" + encodeURIComponent(query);
       }
 
