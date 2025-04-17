@@ -12,9 +12,19 @@
         color: #2e1e0f;
         padding: 2rem;
       }
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+      .header img {
+        max-height: 100px;
+        width: auto;
+      }
       h1 {
         font-size: 2rem;
-        margin-bottom: 1rem;
+        margin: 0;
       }
       .grid {
         display: grid;
@@ -51,7 +61,10 @@
     </style>
   </head>
   <body>
-    <h1>📚 Novità Libri</h1>
+    <div class="header">
+      <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri">
+      <h1>Novità Libri</h1>
+    </div>
     <div class="grid" id="book-grid">Caricamento...</div>
 
     <script>
@@ -64,7 +77,6 @@
             return;
           }
 
-          // Rimuovi duplicati basati su titolo + autore
           const seen = new Set();
           const uniqueBooks = data.filter(book => {
             const key = (book.title + '|' + book.author).toLowerCase();
