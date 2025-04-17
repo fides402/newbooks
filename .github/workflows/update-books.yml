@@ -27,9 +27,7 @@ jobs:
     - name: Aggiungi link Anna's Archive
       run: python scripts/aggiungi_annas_archive.py
 
-    - name: Aggiungi copertine ai dati
-      run: python scripts/aggiungi_copertine_links.py
-
+    # ✅ Usiamo solo lo script corretto nella cartella `data`
     - name: Scarica copertine (usando script in /data)
       run: python data/aggiungi_copertine.py
 
