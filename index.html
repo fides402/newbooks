@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Nuovi Libri</title>
+    <title>📚 Nuovi Libri</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
       body {
@@ -12,14 +12,10 @@
         color: #2e1e0f;
         padding: 2rem;
       }
-      .header {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 2rem;
-      }
       .logo {
-        max-height: 100px;
+        height: 200px;
+        width: auto;
+        margin-bottom: 2rem;
       }
       .grid {
         display: grid;
@@ -31,9 +27,6 @@
         border-radius: 16px;
         padding: 1rem;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
         text-align: center;
       }
       .card h2 {
@@ -59,20 +52,11 @@
     </style>
   </head>
   <body>
-    <div class="header">
-      <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo" />
-    </div>
-
+    <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo" />
     <div class="grid" id="book-grid">Caricamento...</div>
 
     <script>
-      function generateAnnaLink(book) {
-        const base = "https://annas-archive.org/search?";
-        const query = (book.title || '') + (book.author && !book.author.toLowerCase().includes("autore non disponibile") ? " " + book.author : "");
-        return base + "q=" + encodeURIComponent(query.trim());
-      }
-
-      fetch('./books.json')
+      fetch('./networks/data/books.json')
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
@@ -95,7 +79,7 @@
               <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
               <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
               <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
+              <a class="link-button" href="${book.annas_link || '#'}" target="_blank">Anna's Archive</a>
             </div>
           `).join('');
         })
