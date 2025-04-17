@@ -6,32 +6,44 @@ from urllib.parse import quote
 
 BOOKS_PATH = os.path.join(os.path.dirname(__file__), "../data/books.json")
 
+# Inserisci qui la tua chiave API e CX code
 GOOGLE_API_KEY = "AIzaSyBVtXwnVXilsNqLx6of2HG2jiYwAWs-btg"
-CX = "YOUR_CX_CODE_HERE"  # Inserisci qui il codice di Custom Search Engine
+CX = "YOUR_CUSTOM_SEARCH_ENGINE_ID"
+
+def is_valid_image(url):
+    try:
+        head = requests.head(url, timeout=10)
+        if head.status_code == 200:
+            content_type = head.headers.get("Content-Type", "")
+            content_length = int(head.headers.get("Content-Length", 0))
+            return content_type.startswith("image/") and content_length > 25000  # almeno 25 KB
+    except:
+        pass
+    return False
 
 def search_cover_with_google(title, author):
     query = f"{title} {author} copertina libro"
     url = f"https://www.googleapis.com/customsearch/v1?q={quote(query)}&key={GOOGLE_API_KEY}&cx={CX}&searchType=image"
 
     try:
-        print(f"🔍 Google Image Search: {query}")
+        print(f"🔍 Google Search: {query}")
         response = requests.get(url, timeout=15)
+        response.raise_for_status()
         data = response.json()
 
         if "items" in data:
             for item in data["items"]:
                 link = item.get("link")
-                mime = item.get("mime", "")
-                if link and mime.startswith("image/"):
-                    print(f"✅ Copertina trovata: {link}")
+                if link and is_valid_image(link):
+                    print(f"✅ Copertina valida: {link}")
                     return link
     except Exception as e:
-        print(f"⚠️ Errore nella richiesta Google API: {e}")
+        print(f"⚠️ Errore nella Google API: {e}")
     return ""
 
 def enrich_books_with_google_images():
     if not os.path.exists(BOOKS_PATH):
-        print("❌ File non trovato:", BOOKS_PATH)
+        print("❌ File JSON non trovato:", BOOKS_PATH)
         return
 
     with open(BOOKS_PATH, "r", encoding="utf-8") as f:
@@ -44,17 +56,17 @@ def enrich_books_with_google_images():
             print(f"[{i}] Skip: {title}")
             continue
 
-        print(f"[{i}] 🔍 Cerca con Google: {title}")
+        print(f"[{i}] Cerca copertina per: {title}")
         cover = search_cover_with_google(title, author)
         if cover:
             book["cover"] = cover
         else:
-            print(f"❌ Nessuna copertina trovata con Google")
+            print(f"❌ Nessuna copertina trovata per: {title}")
 
         with open(BOOKS_PATH, "w", encoding="utf-8") as f:
             json.dump(books, f, ensure_ascii=False, indent=2)
 
-        time.sleep(1)
+        time.sleep(1.5)
 
 if __name__ == "__main__":
     enrich_books_with_google_images()
