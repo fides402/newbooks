@@ -7,16 +7,21 @@ from urllib.parse import quote_plus, urljoin
 from concurrent.futures import ThreadPoolExecutor
 import re
 
-# Percorso modificato per cercare il JSON nella cartella .github/workflows/
-BOOKS_PATH = os.path.join(os.path.dirname(__file__), ".github", "workflows", "books.json")
+# Percorso corretto per cercare il JSON nella cartella "data/"
+BOOKS_PATH = os.path.join(os.path.dirname(__file__), "data", "books.json")
 
-# Resto delle funzioni originali: sanitize_filename, download_image, get_cover_from_ibs, ecc.
-# Per brevità qui non riscriviamo tutto lo script completo,
-# ma in pratica devi incollare tutte le funzioni dello script funzionante
-# che hai indicato nel tuo messaggio iniziale, senza modificarle.
+# Qui devi incollare tutte le funzioni dello script originale per:
+# - sanitize_filename
+# - download_image
+# - get_cover_from_ibs
+# - get_cover_from_amazon
+# - search_google_images
+# - search_librerie_coop
+# - search_feltrinelli
+# - search_mondadori
+# - process_book
 
-# Inserisci qui tutte le funzioni: sanitize_filename, download_image, get_cover_from_ibs, etc.
-# E infine la main()
+# E infine il main aggiornato:
 def main():
     try:
         with open(BOOKS_PATH, 'r', encoding='utf-8') as f:
