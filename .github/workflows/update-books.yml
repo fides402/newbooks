@@ -3,7 +3,7 @@ name: update-books
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * *'  # Eseguito ogni giorno alle 4:00
+    - cron: '0 4 * * *'
 
 jobs:
   build:
@@ -18,8 +18,8 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install dependencies from requirements.txt
-      run: pip install -r data/requirements.txt
+    - name: Install dependencies
+      run: pip install -r requirements.txt
 
     - name: Genera books.json
       run: python scripts/genera_books_json.py
@@ -27,8 +27,9 @@ jobs:
     - name: Aggiungi link Anna's Archive
       run: python scripts/aggiungi_annas_archive.py
 
-    - name: Aggiungi copertine ai dati
-      run: python scripts/aggiungi_copertine_links.py
+    # 🔥 RIMOSSO aggiungi_copertine_links.py perché non esiste più
+    # - name: Aggiungi copertine ai dati
+    #   run: python scripts/aggiungi_copertine_links.py
 
     - name: Scarica copertine (usando script in /data)
       run: python data/aggiungi_copertine.py
