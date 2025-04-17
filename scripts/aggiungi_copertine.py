@@ -18,7 +18,7 @@ def get_cover_from_ibs(link):
         res = requests.get(link, headers=headers, timeout=10)
         if res.status_code == 200:
             soup = BeautifulSoup(res.text, "html.parser")
-            img_tag = soup.find("img", {"class": "js-cover"})
+            img_tag = soup.find("img", class_="cc-img")
             if img_tag and img_tag.get("src"):
                 return img_tag["src"]
     except Exception as e:
@@ -56,7 +56,7 @@ def enrich_books_with_covers():
             cover = None
             if "ibs.it" in book.get("link_acquisto", ""):
                 cover = get_cover_from_ibs(book["link_acquisto"])
-                time.sleep(1.2)  # rispetto per il sito
+                time.sleep(1.2)  # rispetto per IBS
             if not cover:
                 cover = get_cover_from_google(book["title"], book["author"])
             if cover:
@@ -66,7 +66,7 @@ def enrich_books_with_covers():
 
     with open(BOOKS_PATH, "w", encoding="utf-8") as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
-        print("[✓] books.json aggiornato con copertine da IBS + Google")
+        print("[✓] books.json aggiornato con copertine (IBS + Google)")
 
 if __name__ == "__main__":
     enrich_books_with_covers()
