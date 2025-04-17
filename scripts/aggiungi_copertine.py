@@ -22,8 +22,7 @@ def clean_title(title):
 def get_cover_from_ibs(title, author):
     headers = {
         "User-Agent": "Mozilla/5.0",
-        "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9"
+        "Accept-Language": "it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7"
     }
 
     search_strategies = [
@@ -78,7 +77,7 @@ def get_cover_from_ibs(title, author):
                     match = re.search(r'/e/(\d{10,13})', link)
                     if match:
                         isbn = match.group(1)
-                        url = f"https://www.ibs.it/images/{isbn}_0_0_536_0_75.jpg"
+                        url = f"https://www.ibs.it/images/{isbn}_0_536_0_75.jpg"
                         if requests.head(url, headers=headers, timeout=10).status_code == 200:
                             print(f"✅ Copertina da ISBN: {url}")
                             return url
@@ -86,20 +85,20 @@ def get_cover_from_ibs(title, author):
                 page = requests.get(link, headers=headers, timeout=15)
                 book_soup = BeautifulSoup(page.text, "html.parser")
 
-                # 1. og:image
-                og = book_soup.select_one('meta[property="og:image"]')
-                if og and og.get("content", "").endswith(".jpg"):
-                    print(f"✅ Copertina da og:image")
-                    return og["content"]
-
-                # 2. immagine diretta
-                img = book_soup.select_one('img.cc-img[src*=".jpg"]')
+                # 1. cerca direttamente img.cc-img
+                img = book_soup.select_one('img.cc-img[src$=".jpg"]')
                 if img:
                     src = img.get("src")
                     if not src.startswith("http"):
                         src = "https://www.ibs.it" + src
                     print(f"✅ Copertina da .cc-img: {src}")
                     return src
+
+                # 2. og:image fallback
+                og = book_soup.select_one('meta[property="og:image"]')
+                if og and og.get("content", "").endswith(".jpg"):
+                    print(f"✅ Copertina da og:image")
+                    return og["content"]
 
         except Exception as e:
             print(f"⚠️ Errore strategia '{strategy['desc']}': {e}")
