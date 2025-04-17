@@ -19,7 +19,7 @@ jobs:
         python-version: '3.x'
 
     - name: Install dependencies
-      run: pip install requests beautifulsoup4
+      run: pip install requests beautifulsoup4 pandas
 
     - name: Genera books.json
       run: python scripts/genera_books_json.py
