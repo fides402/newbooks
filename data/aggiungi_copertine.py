@@ -1,87 +1,80 @@
 import os
 import json
-import re
 import time
 import requests
+import re
 from urllib.parse import quote_plus
-from bs4 import BeautifulSoup
 
-BOOKS_PATH = os.path.join("data", "books.json")
-COVERS_DIR = os.path.join("data", "book_covers")
-PLACEHOLDER = "https://via.placeholder.com/300x450?text=Nessuna+Copertina"
+# Percorso alla cartella dei dati
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+COVERS_DIR = os.path.join(SCRIPT_DIR, '..', 'data')
+BOOKS_JSON = os.path.join(COVERS_DIR, 'books.json')
 
+# Crea la directory se non esiste
 os.makedirs(COVERS_DIR, exist_ok=True)
 
-def sanitize_filename(text):
-    return re.sub(r'[\\/*?:"<>|]', "", text).replace(" ", "_")
+def sanitize_filename(name):
+    return re.sub(r'[\\/*?:"<>|]', '', name).replace(' ', '_')
 
-def search_google_image(query):
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-    url = f"https://www.google.com/search?q={quote_plus(query)}&tbm=isch"
+def search_google_images(query):
     try:
-        res = requests.get(url, headers=headers, timeout=10)
-        soup = BeautifulSoup(res.text, "html.parser")
-        img_tags = soup.select("img")
-        for img in img_tags:
-            src = img.get("src") or img.get("data-src")
-            if src and "http" in src and not src.startswith("data:"):
-                return src
+        search_url = f"https://www.google.com/search?q={quote_plus(query)}&tbm=isch"
+        headers = {
+            'User-Agent': 'Mozilla/5.0'
+        }
+        response = requests.get(search_url, headers=headers, timeout=10)
+        if response.status_code == 200:
+            image_urls = re.findall(r'(https?://[^"\']+\.(?:jpg|png|jpeg))', response.text)
+            return image_urls[0] if image_urls else None
     except Exception as e:
-        print(f"[!] Errore ricerca Google per {query}: {e}")
+        print(f"[❌] Errore ricerca Google Images per '{query}': {e}")
     return None
 
 def download_image(url, path):
     try:
-        r = requests.get(url, timeout=10)
+        r = requests.get(url, stream=True, timeout=10)
         if r.status_code == 200:
-            with open(path, "wb") as f:
-                f.write(r.content)
+            with open(path, 'wb') as f:
+                for chunk in r.iter_content(1024):
+                    f.write(chunk)
             return True
     except Exception as e:
-        print(f"[!] Errore download: {e}")
+        print(f"[⚠️] Errore download immagine {url}: {e}")
     return False
 
 def main():
-    with open(BOOKS_PATH, "r", encoding="utf-8") as f:
+    with open(BOOKS_JSON, 'r', encoding='utf-8') as f:
         books = json.load(f)
 
     for book in books:
-        if book.get("cover"):
+        title = book.get('title', '')
+        author = book.get('author', '')
+        if not title or not author:
             continue
 
-        title = book.get("title", "")
-        author = book.get("author", "")
-        if not title:
+        filename = sanitize_filename(f"{title}_{author}") + '.jpg'
+        filepath = os.path.join(COVERS_DIR, filename)
+
+        if os.path.exists(filepath):
+            print(f"[✅] Copertina esiste: {filename}")
+            book['cover'] = f"data/{filename}"
             continue
 
-        query = f"{title} {author} copertina libro"
         print(f"[🔍] Cerco copertina per: {title}")
-
-        filename = sanitize_filename(f"{title}_{author}.jpg")
-        local_path = os.path.join(COVERS_DIR, filename)
-        relative_path = f"data/book_covers/{filename}"
-
-        if os.path.exists(local_path):
-            print(f"[✔️] Copertina già presente")
-            book["cover"] = relative_path
-            continue
-
-        img_url = search_google_image(query)
-        if img_url and download_image(img_url, local_path):
-            print(f"[⬇️] Copertina salvata in: {relative_path}")
-            book["cover"] = relative_path
+        query = f"{title} {author} copertina libro"
+        url = search_google_images(query)
+        if url and download_image(url, filepath):
+            print(f"[⬇️] Scaricata copertina: {filename}")
+            book['cover'] = f"data/{filename}"
         else:
-            print(f"[⛔] Nessuna copertina trovata")
-            book["cover"] = PLACEHOLDER
+            print(f"[⛔] Nessuna copertina trovata per: {title}")
 
-        time.sleep(1.5)
+        time.sleep(1)  # Rispetta i limiti
 
-    with open(BOOKS_PATH, "w", encoding="utf-8") as f:
+    # Salva il file aggiornato
+    with open(BOOKS_JSON, 'w', encoding='utf-8') as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
+    print("[💾] File books.json aggiornato con le copertine.")
 
-    print("[✅] books.json aggiornato con copertine")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
