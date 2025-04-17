@@ -1,35 +1,36 @@
-name: Update Books Data
+name: Aggiorna Copertine Libri
 
 on:
-  schedule:
-    - cron: '0 4 * * *'
   workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * *'  # ogni giorno alle 04:00 UTC
 
 jobs:
-  update-books:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - name: Clona la repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests beautifulsoup4 pandas python-docx
+    - name: Installa dipendenze
+      run: pip install requests beautifulsoup4
 
-      - name: Run scraping workflow
-        run: python scripts/update_books.py
+    - name: Esegui script copertine
+      run: python data/aggiungi_copertine.py
 
-      - name: Commit and push updates
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git add data/books.json
-          git commit -m "Auto update books.json"
-          git push
+    - name: Lista immagini scaricate (debug)
+      run: ls -l book_covers || echo "Nessuna cartella trovata"
+
+    - name: Commit e Push aggiornamenti
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "actions@github.com"
+        git add book_covers/*.jpg || echo "Nessuna immagine trovata"
+        git commit -m "Aggiornate copertine libri" || echo "Niente da commitare"
+        git push
