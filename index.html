@@ -27,12 +27,6 @@
         padding: 1rem;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       }
-      .card img {
-        width: 100%;
-        height: auto;
-        border-radius: 12px;
-        margin-bottom: 0.5rem;
-      }
       .card h2 {
         font-size: 1.1rem;
         margin-bottom: 0.3rem;
@@ -72,7 +66,6 @@
 
           container.innerHTML = data.map(book => `
             <div class="card">
-              <img src="${book.cover || 'https://via.placeholder.com/200x300?text=Nessuna+Copertina'}" alt="Copertina libro">
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author}</p>
               <p><strong>Categoria:</strong> ${book.categoria}</p>
