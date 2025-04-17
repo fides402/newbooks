@@ -73,7 +73,12 @@
         return base + "q=" + encodeURIComponent(query.trim());
       }
 
-      fetch('./data/books.json?v=' + Date.now())
+      function getLocalCoverPath(book) {
+        const clean = (str) => str ? str.replace(/[\\/*?"<>|:]/g, '').replace(/\s+/g, '_') : '';
+        return './book_covers/' + clean(book.title) + '_' + clean(book.author) + '.jpg';
+      }
+
+      fetch('./books.json')
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
@@ -92,11 +97,11 @@
 
           container.innerHTML = uniqueBooks.map(book => `
             <div class="card">
-              ${book.cover ? `<img src="${book.cover}" alt="Copertina">` : ''}
+              <img src="${getLocalCoverPath(book)}" alt="Copertina di ${book.title}">
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
-              <p><strong>Categoria:</strong> ${book.categoria}</p>
-              <p><strong>Data:</strong> ${book.releaseDate}</p>
+              <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
+              <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
               <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
             </div>
           `).join('');
