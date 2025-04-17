@@ -28,6 +28,14 @@
         padding: 1rem;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       }
+      .card img {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+        object-fit: contain;
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+      }
       .card h2 {
         font-size: 1.1rem;
         margin-bottom: 0.3rem;
@@ -90,6 +98,7 @@
 
           container.innerHTML = filteredBooks.map(book => `
             <div class="card">
+              ${book.cover ? `<img src="${book.cover}" alt="Copertina">` : ''}
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
               <p><strong>Categoria:</strong> ${book.categoria}</p>
