@@ -12,7 +12,7 @@ COVERS_DIR = os.path.join(os.path.dirname(__file__), "../docs/book_covers")
 os.makedirs(COVERS_DIR, exist_ok=True)
 
 HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
 }
 
 def sanitize(text):
@@ -23,15 +23,23 @@ def search_cover_url(title, author):
     url = f"https://www.google.com/search?q={quote_plus(query)}&tbm=isch"
 
     try:
-        resp = requests.get(url, headers=HEADERS, timeout=10)
+        resp = requests.get(url, headers=HEADERS, timeout=15)
+        if resp.status_code != 200:
+            print(f"❌ Errore HTTP da Google: {resp.status_code}")
+            return None
+
         soup = BeautifulSoup(resp.text, "html.parser")
-        images = soup.select("img")
-        for img in images:
-            src = img.get("src")
-            if src and src.startswith("http"):
-                return src
+        scripts = soup.find_all("script")
+
+        for script in scripts:
+            if 'AF_initDataCallback' in script.text:
+                matches = re.findall(r'https?://[^"]+\.(jpg|jpeg|png)', script.text)
+                filtered = [url for url in matches if not url.startswith('data:')]
+                if filtered:
+                    return filtered[0]  # Prima immagine valida
+
     except Exception as e:
-        print(f"[!] Errore durante la ricerca per {title}: {e}")
+        print(f"❌ Errore durante la ricerca per {title}: {e}")
     return None
 
 def download_cover(url, filename):
@@ -42,9 +50,9 @@ def download_cover(url, filename):
                 f.write(r.content)
             print(f"✅ Scaricata: {filename}")
         else:
-            print(f"❌ Errore nel download {url}: {r.status_code}")
+            print(f"❌ Impossibile scaricare {url}: {r.status_code}")
     except Exception as e:
-        print(f"❌ Download fallito per {url}: {e}")
+        print(f"❌ Errore nel download da {url}: {e}")
 
 def process_book(book):
     title = book.get("title", "").strip()
@@ -52,17 +60,18 @@ def process_book(book):
     if not title:
         return
 
-    print(f"[🔍] Titolo: {title}")
+    print(f"\n🔍 {title} - {author or 'Autore sconosciuto'}")
     filename = os.path.join(COVERS_DIR, f"{sanitize(title)}_{sanitize(author)}.jpg")
     if os.path.exists(filename):
-        print("↪️  Copertina già presente")
+        print("↪️  Già presente")
         return
 
-    cover_url = search_cover_url(title, author)
-    if cover_url:
-        download_cover(cover_url, filename)
+    img_url = search_cover_url(title, author)
+    if img_url:
+        print(f"🌐 Copertina trovata: {img_url}")
+        download_cover(img_url, filename)
     else:
-        print(f"[⏭] Nessuna copertina trovata per: {title}")
+        print(f"🕳 Nessuna copertina trovata")
 
 def main():
     if not os.path.exists(BOOKS_PATH):
@@ -72,7 +81,7 @@ def main():
     with open(BOOKS_PATH, "r", encoding="utf-8") as f:
         books = json.load(f)
 
-    print(f"📚 Trovati {len(books)} libri. Inizio scraping copertine...")
+    print(f"\n📚 {len(books)} libri da elaborare")
     with ThreadPoolExecutor(max_workers=3) as pool:
         pool.map(process_book, books)
 
