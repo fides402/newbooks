@@ -6,9 +6,9 @@ from urllib.parse import quote
 
 BOOKS_PATH = os.path.join(os.path.dirname(__file__), "../data/books.json")
 
-# Inserisci qui la tua chiave API e CX code
+# Chiave e CX forniti
 GOOGLE_API_KEY = "AIzaSyBVtXwnVXilsNqLx6of2HG2jiYwAWs-btg"
-CX = "YOUR_CUSTOM_SEARCH_ENGINE_ID"
+CX = "75b2abca03df54610"
 
 def is_valid_image(url):
     try:
@@ -16,7 +16,7 @@ def is_valid_image(url):
         if head.status_code == 200:
             content_type = head.headers.get("Content-Type", "")
             content_length = int(head.headers.get("Content-Length", 0))
-            return content_type.startswith("image/") and content_length > 25000  # almeno 25 KB
+            return content_type.startswith("image/") and content_length > 25000
     except:
         pass
     return False
