@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📚 Nuovi Libri</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📚 Libreria</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -13,27 +13,23 @@
       padding: 2rem;
     }
     .logo {
-      height: 150px;
+      height: 300px;
       margin-bottom: 2rem;
     }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1.5rem;
+      gap: 1rem;
     }
     .card {
       background: #fff9e6;
       border-radius: 16px;
       padding: 1rem;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
-    }
-    .card img {
-      max-height: 300px;
-      object-fit: contain;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      margin-bottom: 0.5rem;
     }
     .card h2 {
       font-size: 1.1rem;
@@ -58,14 +54,19 @@
   </style>
 </head>
 <body>
-  <img src="logo_nuovi_libri.png" alt="Logo" class="logo" />
+  <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo" />
   <div class="grid" id="book-grid">Caricamento...</div>
 
   <script>
     function generateAnnaLink(book) {
       const base = "https://annas-archive.org/search?";
-      const query = (book.title || '') + (book.author ? " " + book.author : "");
+      const query = (book.title || '') + (book.author && !book.author.toLowerCase().includes("autore non disponibile") ? " " + book.author : "");
       return base + "q=" + encodeURIComponent(query.trim());
+    }
+
+    function getLocalCoverPath(book) {
+      const clean = (str) => str ? str.replace(/[\\/*?"<>|:]/g, '').replace(/\s+/g, '_') : '';
+      return './data/' + clean(book.title) + '_' + clean(book.author) + '.jpg';
     }
 
     fetch('./data/books.json')
@@ -87,7 +88,7 @@
 
         container.innerHTML = uniqueBooks.map(book => `
           <div class="card">
-            <img src="${book.cover}" alt="Copertina di ${book.title}" loading="lazy">
+            <img src="${getLocalCoverPath(book)}" alt="Copertina di ${book.title}" style="max-height: 300px;" onerror="this.style.display='none'">
             <h2>${book.title}</h2>
             <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
             <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
