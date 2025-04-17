@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>📚 Nuovi Libri</title>
+    <title>Nuovi Libri</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
       body {
@@ -12,10 +12,19 @@
         color: #2e1e0f;
         padding: 2rem;
       }
-      .logo {
-        height: 200px;
-        width: auto;
+      .logo-container {
+        display: flex;
+        align-items: flex-start;
         margin-bottom: 2rem;
+      }
+      .logo {
+        height: 120px;
+        margin-right: 1rem;
+      }
+      h1 {
+        font-size: 2.5rem;
+        margin: 0;
+        align-self: center;
       }
       .grid {
         display: grid;
@@ -27,7 +36,8 @@
         border-radius: 16px;
         padding: 1rem;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        text-align: center;
+        display: flex;
+        flex-direction: column;
       }
       .card h2 {
         font-size: 1.1rem;
@@ -45,6 +55,7 @@
         border-radius: 8px;
         font-size: 0.8rem;
         text-decoration: none;
+        width: fit-content;
       }
       .link-button:hover {
         background-color: #7b5934;
@@ -52,11 +63,20 @@
     </style>
   </head>
   <body>
-    <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo" />
+    <div class="logo-container">
+      <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo" />
+      <h1>Nuovi Libri</h1>
+    </div>
     <div class="grid" id="book-grid">Caricamento...</div>
 
     <script>
-      fetch('./networks/data/books.json')
+      function generateAnnaLink(book) {
+        const base = "https://annas-archive.org/search?";
+        const query = (book.title || '') + (book.author && !book.author.toLowerCase().includes("autore non disponibile") ? " " + book.author : "");
+        return base + "q=" + encodeURIComponent(query.trim());
+      }
+
+      fetch('./data/books.json')
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
@@ -79,7 +99,7 @@
               <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
               <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
               <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-              <a class="link-button" href="${book.annas_link || '#'}" target="_blank">Anna's Archive</a>
+              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
             </div>
           `).join('');
         })
