@@ -2,32 +2,50 @@ import os
 import json
 import time
 import requests
-import re
-from lxml import html
+from bs4 import BeautifulSoup
+from urllib.parse import quote
 
 BOOKS_PATH = os.path.join(os.path.dirname(__file__), "../data/books.json")
 
-# XPath fornito dall'utente per la copertina nel carosello
-COVER_XPATH = '//*[@id="slick-slide10"]/div/img'
+def get_cover_from_bing(title, author):
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+    }
 
-def extract_cover_with_xpath(page_url, headers):
+    query = f"{title} {author} copertina libro"
+    url = f"https://www.bing.com/images/search?q={quote(query)}&form=HDRSC2"
+
     try:
-        res = requests.get(page_url, headers=headers, timeout=15)
-        tree = html.fromstring(res.content)
+        print(f"🔍 Bing search: {query}")
+        response = requests.get(url, headers=headers, timeout=15)
+        soup = BeautifulSoup(response.text, "html.parser")
 
-        # Cerca l'immagine con XPath
-        img_elements = tree.xpath(COVER_XPATH)
-        for img in img_elements:
-            src = img.get("src")
-            if src and ".jpg" in src:
-                if not src.startswith("http"):
-                    src = "https://www.ibs.it" + src
-                return src
+        images = soup.select("a.iusc")
+
+        for img_tag in images:
+            m_json = img_tag.get("m")
+            if not m_json:
+                continue
+
+            # Estrai URL da JSON in attributo m
+            try:
+                import json as j
+                m_data = j.loads(m_json)
+                img_url = m_data.get("murl", "")
+                if img_url.lower().endswith(".jpg") and "cover" in img_url.lower():
+                    # Verifica dimensione
+                    head = requests.head(img_url, timeout=10)
+                    if head.status_code == 200 and int(head.headers.get("Content-Length", 0)) > 20_000:
+                        print(f"✅ Copertina trovata: {img_url}")
+                        return img_url
+            except Exception:
+                continue
+
     except Exception as e:
-        print(f"Errore nell'estrazione via XPath: {e}")
+        print(f"⚠️ Errore Bing scraping: {e}")
     return ""
 
-def enrich_books_using_xpath():
+def enrich_books_with_bing_images():
     if not os.path.exists(BOOKS_PATH):
         print("❌ File non trovato:", BOOKS_PATH)
         return
@@ -35,29 +53,24 @@ def enrich_books_using_xpath():
     with open(BOOKS_PATH, "r", encoding="utf-8") as f:
         books = json.load(f)
 
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Accept-Language": "it-IT,it;q=0.9"
-    }
-
     for i, book in enumerate(books, start=1):
         title = book.get("title", "")
-        ibs_url = book.get("ibs_url", "")
-        if not title or not ibs_url or book.get("cover"):
+        author = book.get("author", "")
+        if not title or book.get("cover"):
             print(f"[{i}] Skip: {title}")
             continue
 
-        print(f"[{i}] Estrazione copertina da XPath per: {title}")
-        cover = extract_cover_with_xpath(ibs_url, headers)
+        print(f"[{i}] 🔍 Cerca con Bing: {title}")
+        cover = get_cover_from_bing(title, author)
         if cover:
             book["cover"] = cover
-            print(f"✅ Copertina trovata: {cover}")
         else:
-            print(f"❌ Copertina non trovata via XPath per: {title}")
+            print(f"❌ Nessuna copertina trovata con Bing")
 
         with open(BOOKS_PATH, "w", encoding="utf-8") as f:
             json.dump(books, f, ensure_ascii=False, indent=2)
+
         time.sleep(2)
 
 if __name__ == "__main__":
-    enrich_books_using_xpath()
+    enrich_books_with_bing_images()
