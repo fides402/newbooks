@@ -12,16 +12,19 @@
         color: #2e1e0f;
         padding: 2rem;
       }
+
       .logo {
         width: auto;
         max-height: 200px;
         margin-bottom: 2rem;
       }
+
       .grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 1rem;
       }
+
       .card {
         background: #fff9e6;
         border-radius: 16px;
@@ -32,6 +35,7 @@
         align-items: center;
         text-align: center;
       }
+
       .card img {
         width: auto;
         max-height: 300px;
@@ -40,14 +44,17 @@
         border-radius: 8px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
+
       .card h2 {
         font-size: 1.1rem;
         margin: 0.2rem 0;
       }
+
       .card p {
         margin: 0.1rem 0;
         font-size: 0.9rem;
       }
+
       .link-button {
         margin-top: 0.5rem;
         padding: 5px 10px;
@@ -57,6 +64,7 @@
         font-size: 0.8rem;
         text-decoration: none;
       }
+
       .link-button:hover {
         background-color: #7b5934;
       }
@@ -67,18 +75,7 @@
     <div class="grid" id="book-grid">Caricamento...</div>
 
     <script>
-      function generateAnnaLink(book) {
-        const base = "https://annas-archive.org/search?";
-        const query = (book.title || '') + (book.author && !book.author.toLowerCase().includes("autore non disponibile") ? " " + book.author : "");
-        return base + "q=" + encodeURIComponent(query.trim());
-      }
-
-      function getLocalCoverPath(book) {
-        const clean = (str) => str ? str.replace(/[\\/*?"<>|:]/g, '').replace(/\s+/g, '_') : '';
-        return './book_covers/' + clean(book.title) + '_' + clean(book.author) + '.jpg';
-      }
-
-      fetch('./books.json')
+      fetch('./data/books.json?v=' + Date.now())
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
@@ -97,12 +94,13 @@
 
           container.innerHTML = uniqueBooks.map(book => `
             <div class="card">
-              <img src="${getLocalCoverPath(book)}" alt="Copertina di ${book.title}">
+              ${book.cover ? `<img src="${book.cover}" alt="Copertina">` : ''}
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
               <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
               <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
+              ${book.annas_link ? `<a class="link-button" href="${book.annas_link}" target="_blank">Anna's Archive</a>` : '<p>Anna\'s Archive assente</p>'}
+              ${book.link_acquisto ? `<a class="link-button" href="${book.link_acquisto}" target="_blank">Compra</a>` : ''}
             </div>
           `).join('');
         })
