@@ -2,14 +2,33 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Libri</title>
+  <title>Elenco Libri</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 2em; background: #f9f9f9; }
-    h1 { color: #333; }
-    .book { padding: 1em; border-bottom: 1px solid #ccc; }
-    .title { font-weight: bold; font-size: 1.2em; color: #222; }
-    .author { font-style: italic; color: #555; }
-    .source { font-size: 0.9em; color: #888; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2em;
+      background-color: #f9f9f9;
+    }
+    h1 {
+      color: #333;
+    }
+    .book {
+      padding: 1em;
+      border-bottom: 1px solid #ccc;
+    }
+    .title {
+      font-weight: bold;
+      font-size: 1.2em;
+      color: #222;
+    }
+    .author {
+      font-style: italic;
+      color: #555;
+    }
+    .source {
+      font-size: 0.9em;
+      color: #888;
+    }
   </style>
 </head>
 <body>
@@ -27,10 +46,13 @@
           div.innerHTML = `
             <div class="title">${book.title}</div>
             <div class="author">${book.author || 'Autore sconosciuto'}</div>
-            <div class="source">Fonte copertina: ${book.cover ? '✓' : '✗'}</div>
+            <div class="source">Copertina disponibile: ${book.cover ? 'Sì' : 'No'}</div>
           `;
           container.appendChild(div);
         });
+      })
+      .catch(error => {
+        console.error('Errore nel caricamento dei dati:', error);
       });
   </script>
 </body>
