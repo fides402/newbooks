@@ -19,7 +19,7 @@
       }
       .grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
         gap: 1rem;
       }
       .card {
@@ -27,25 +27,28 @@
         border-radius: 16px;
         padding: 1rem;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
       }
       .card img {
-        width: 100%;
-        height: auto;
+        width: auto;
         max-height: 300px;
         object-fit: contain;
+        margin-bottom: 0.8rem;
         border-radius: 8px;
-        margin-bottom: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       }
       .card h2 {
         font-size: 1.1rem;
-        margin-bottom: 0.3rem;
+        margin: 0.2rem 0;
       }
       .card p {
-        margin: 0.2rem 0;
+        margin: 0.1rem 0;
         font-size: 0.9rem;
       }
       .link-button {
-        display: inline-block;
         margin-top: 0.5rem;
         padding: 5px 10px;
         background-color: #382110;
@@ -66,11 +69,8 @@
     <script>
       function generateAnnaLink(book) {
         const base = "https://annas-archive.org/search?";
-        const cleanTitle = book.title || '';
-        const cleanAuthor = book.author && !book.author.toLowerCase().includes("autore non disponibile")
-          ? ` ${book.author}` : '';
-        const query = (cleanTitle + cleanAuthor).trim();
-        return base + "q=" + encodeURIComponent(query);
+        const query = (book.title || '') + (book.author && !book.author.toLowerCase().includes("autore non disponibile") ? " " + book.author : "");
+        return base + "q=" + encodeURIComponent(query.trim());
       }
 
       fetch('./data/books.json?v=' + Date.now())
@@ -90,13 +90,7 @@
             return true;
           });
 
-          const filteredBooks = uniqueBooks.filter(book => {
-            const categoria = (book.categoria || "").toLowerCase();
-            const origin = (book.origin || "").toLowerCase();
-            return !(origin === "italia" && categoria.includes("business"));
-          });
-
-          container.innerHTML = filteredBooks.map(book => `
+          container.innerHTML = uniqueBooks.map(book => `
             <div class="card">
               ${book.cover ? `<img src="${book.cover}" alt="Copertina">` : ''}
               <h2>${book.title}</h2>
