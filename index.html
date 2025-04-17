@@ -56,6 +56,12 @@
     <div class="grid" id="book-grid">Caricamento...</div>
 
     <script>
+      function generateAnnaLink(book) {
+        const base = "https://annas-archive.org/search?";
+        const query = book.author ? `${book.title} ${book.author}` : book.title;
+        return base + "q=" + encodeURIComponent(query);
+      }
+
       fetch('./data/books.json?v=' + Date.now())
         .then(res => res.json())
         .then(data => {
@@ -73,13 +79,19 @@
             return true;
           });
 
-          container.innerHTML = uniqueBooks.map(book => `
+          const filteredBooks = uniqueBooks.filter(book => {
+            const categoria = (book.categoria || "").toLowerCase();
+            const origin = (book.origin || "").toLowerCase();
+            return !(origin === "italia" && categoria.includes("business"));
+          });
+
+          container.innerHTML = filteredBooks.map(book => `
             <div class="card">
               <h2>${book.title}</h2>
-              <p><strong>Autore:</strong> ${book.author}</p>
+              <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
               <p><strong>Categoria:</strong> ${book.categoria}</p>
               <p><strong>Data:</strong> ${book.releaseDate}</p>
-              ${book.annas_link ? `<a class="link-button" href="${book.annas_link}" target="_blank">Anna's Archive</a>` : ''}
+              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
             </div>
           `).join('');
         })
