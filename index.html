@@ -1,105 +1,117 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>📚 Libreria</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #fdf6e3;
-      color: #2e1e0f;
-      padding: 2rem;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 1rem;
-    }
-    .card {
-      background: #fff9e6;
-      border-radius: 16px;
-      padding: 1rem;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-    .card img {
-      width: auto;
-      max-height: 300px;
-      object-fit: contain;
-      margin-bottom: 0.8rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    .card h2 {
-      font-size: 1.1rem;
-      margin: 0.2rem 0;
-    }
-    .card p {
-      margin: 0.1rem 0;
-      font-size: 0.9rem;
-    }
-    .link-button {
-      margin-top: 0.5rem;
-      padding: 5px 10px;
-      background-color: #382110;
-      color: #fff;
-      border-radius: 8px;
-      font-size: 0.8rem;
-      text-decoration: none;
-    }
-    .link-button:hover {
-      background-color: #7b5934;
-    }
-  </style>
-</head>
-<body>
-  <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" style="height: 120px; margin-bottom: 2rem;" />
-  <div class="grid" id="book-grid">Caricamento...</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Nuovi Libri</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #fdf6e3;
+        color: #2e1e0f;
+        padding: 2rem;
+      }
+      .header {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+      }
+      .logo {
+        max-height: 320px;
+        width: auto;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 1rem;
+      }
+      .card {
+        background: #fff9e6;
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .card img {
+        width: auto;
+        max-height: 300px;
+        object-fit: contain;
+        margin-bottom: 0.8rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .card h2 {
+        font-size: 1.1rem;
+        margin: 0.2rem 0;
+      }
+      .card p {
+        margin: 0.1rem 0;
+        font-size: 0.9rem;
+      }
+      .link-button {
+        margin-top: 0.5rem;
+        padding: 5px 10px;
+        background-color: #382110;
+        color: #fff;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        text-decoration: none;
+      }
+      .link-button:hover {
+        background-color: #7b5934;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo"/>
+    </div>
 
-  <script>
-    function generateAnnaLink(book) {
-      const base = "https://annas-archive.org/search?q=";
-      const query = (book.title || '') + (book.author ? " " + book.author : "");
-      return base + encodeURIComponent(query.trim());
-    }
+    <div class="grid" id="book-grid">Caricamento...</div>
 
-    fetch('./books.json')
-      .then(res => res.json())
-      .then(data => {
-        const container = document.getElementById('book-grid');
-        if (!Array.isArray(data) || data.length === 0) {
-          container.innerHTML = '<p>Nessun libro trovato.</p>';
-          return;
-        }
+    <script>
+      function generateAnnaLink(book) {
+        const base = "https://annas-archive.org/search?";
+        const query = (book.title || '') + (book.author && !book.author.toLowerCase().includes("autore non disponibile") ? " " + book.author : "");
+        return base + "q=" + encodeURIComponent(query.trim());
+      }
 
-        const seen = new Set();
-        const uniqueBooks = data.filter(book => {
-          const key = (book.title + '|' + book.author).toLowerCase();
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
+      fetch('./books.json')
+        .then(res => res.json())
+        .then(data => {
+          const container = document.getElementById('book-grid');
+          if (!Array.isArray(data) || data.length === 0) {
+            container.innerHTML = '<p>Nessun libro trovato.</p>';
+            return;
+          }
+
+          const seen = new Set();
+          const uniqueBooks = data.filter(book => {
+            const key = (book.title + '|' + book.author).toLowerCase();
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          });
+
+          container.innerHTML = uniqueBooks.map(book => `
+            <div class="card">
+              <img src="${book.cover}" alt="Copertina di ${book.title}">
+              <h2>${book.title}</h2>
+              <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
+              <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
+              <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
+              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
+            </div>
+          `).join('');
+        })
+        .catch(err => {
+          document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
+          console.error(err);
         });
-
-        container.innerHTML = uniqueBooks.map(book => `
-          <div class="card">
-            <img src="${book.cover}" alt="Copertina di ${book.title}">
-            <h2>${book.title}</h2>
-            <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
-            <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
-            <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
-          </div>
-        `).join('');
-      })
-      .catch(err => {
-        document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
-        console.error(err);
-      });
-  </script>
-</body>
+    </script>
+  </body>
 </html>
