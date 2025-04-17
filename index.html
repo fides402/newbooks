@@ -18,7 +18,8 @@
       margin-bottom: 2rem;
     }
     .header img {
-      height: 160px;
+      height: 120px;
+      margin-right: 1rem;
     }
     .grid {
       display: grid;
@@ -30,21 +31,17 @@
       border-radius: 16px;
       padding: 1rem;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
       text-align: center;
     }
     .card img {
-      width: auto;
+      max-width: 100%;
       max-height: 300px;
       object-fit: contain;
+      border-radius: 12px;
       margin-bottom: 0.8rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .card h2 {
-      font-size: 1.1rem;
+      font-size: 1rem;
       margin: 0.2rem 0;
     }
     .card p {
@@ -53,7 +50,8 @@
     }
     .link-button {
       margin-top: 0.5rem;
-      padding: 5px 10px;
+      display: inline-block;
+      padding: 6px 12px;
       background-color: #382110;
       color: #fff;
       border-radius: 8px;
@@ -67,43 +65,38 @@
 </head>
 <body>
   <div class="header">
-    <img src="logo_nuovi_libri.png" alt="Logo">
+    <img src="logo.png" alt="Logo">
   </div>
 
   <div class="grid" id="book-grid">Caricamento...</div>
 
   <script>
-    fetch('./books.json')
+    fetch('data/books.json')
       .then(res => res.json())
-      .then(data => {
+      .then(books => {
         const container = document.getElementById('book-grid');
-        if (!Array.isArray(data) || data.length === 0) {
-          container.innerHTML = '<p>Nessun libro trovato.</p>';
-          return;
-        }
-
         const seen = new Set();
-        const uniqueBooks = data.filter(book => {
+        const filtered = books.filter(book => {
           const key = (book.title + '|' + book.author).toLowerCase();
           if (seen.has(key)) return false;
           seen.add(key);
           return true;
         });
 
-        container.innerHTML = uniqueBooks.map(book => `
+        container.innerHTML = filtered.map(book => `
           <div class="card">
-            <img src="${book.cover || ''}" alt="Copertina di ${book.title}">
+            <img src="${book.cover}" alt="Copertina">
             <h2>${book.title}</h2>
             <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
             <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
             <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            ${book.annas_link ? `<a class="link-button" href="${book.annas_link}" target="_blank">Anna's Archive</a>` : ''}
+            <a class="link-button" href="${book.annas_link}" target="_blank">Anna's Archive</a>
           </div>
         `).join('');
       })
       .catch(err => {
         document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
-        console.error(err);
+        console.error("JSON load error:", err);
       });
   </script>
 </body>
