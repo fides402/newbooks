@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>📚 Nuovi Libri</title>
+    <title>Nuovi Libri</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
       body {
@@ -12,10 +12,14 @@
         color: #2e1e0f;
         padding: 2rem;
       }
-      .logo {
-        width: auto;
-        max-height: 200px;
+      .header {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
         margin-bottom: 2rem;
+      }
+      .logo {
+        max-height: 100px;
       }
       .grid {
         display: grid;
@@ -55,7 +59,10 @@
     </style>
   </head>
   <body>
-    <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo" />
+    <div class="header">
+      <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo" />
+    </div>
+
     <div class="grid" id="book-grid">Caricamento...</div>
 
     <script>
@@ -65,7 +72,7 @@
         return base + "q=" + encodeURIComponent(query.trim());
       }
 
-      fetch('./networks/data/books.json')
+      fetch('./books.json')
         .then(res => res.json())
         .then(data => {
           const container = document.getElementById('book-grid');
