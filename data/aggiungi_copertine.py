@@ -6,47 +6,40 @@ from bs4 import BeautifulSoup
 from urllib.parse import quote_plus, urljoin
 import re
 
-# Path to your books.json
-BOOKS_JSON = "books.json"
-# Optionally, folder to download covers
-COVERS_DIR = "book_covers"
+# Usa sempre percorsi relativi allo script attuale
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+BOOKS_JSON = os.path.join(BASE_DIR, "books.json")
+COVERS_DIR = os.path.join(BASE_DIR, "book_covers")
 
-# Ensure covers directory exists
+# Assicurati che esista la cartella delle copertine
 os.makedirs(COVERS_DIR, exist_ok=True)
 
-# Utility to sanitize filenames
+# Funzione per sanitizzare i nomi file
 def sanitize_filename(name):
     return re.sub(r'[\\/*?:"<>|]', '', name)
 
-# --- Functions to scrape cover URLs (abbreviated) ---
-# You can keep your existing get_cover_from_ibs, search_feltrinelli, etc.
-# For brevity, here is a simplified placeholder; replace with your detailed implementations.
-
+# (Implementa o importa le tue funzioni dettagliate qui)
 def get_cover_from_ibs(url):
-    # ... your existing scraping logic ...
+    # Implementa la tua logica...
     return None
 
 def search_feltrinelli(title, author):
-    # ... your existing retailer search logic ...
+    # Implementa la tua logica...
     return None
 
 def search_mondadori(title, author):
-    # ... your existing retailer search logic ...
+    # Implementa la tua logica...
     return None
 
 def search_google_images(query):
-    # ... your existing fallback logic ...
+    # Implementa la tua logica...
     return None
 
-# Main process
-
 def enrich_covers():
-    # Load JSON
     with open(BOOKS_JSON, 'r', encoding='utf-8') as f:
         books = json.load(f)
 
     for book in books:
-        # Skip if already set
         if book.get('cover'):
             continue
 
@@ -55,12 +48,9 @@ def enrich_covers():
         link = book.get('link_acquisto', '')
         cover_url = None
 
-        # Try purchase link
         if 'ibs.it' in link:
             cover_url = get_cover_from_ibs(link)
-        # add more conditions if needed
 
-        # Try other sources
         if not cover_url:
             cover_url = search_feltrinelli(title, author)
         if not cover_url:
@@ -68,32 +58,29 @@ def enrich_covers():
         if not cover_url:
             cover_url = search_google_images(f"{title} {author}")
 
-        # Update JSON
         if cover_url:
             book['cover'] = cover_url
-            print(f"Found cover for '{title}' -> {cover_url}")
+            print(f"Trovata copertina per '{title}': {cover_url}")
 
-            # Optionally, download image
+            # Scarica la copertina
             try:
-                resp = requests.get(cover_url, headers={ 'User-Agent': 'Mozilla/5.0' })
-                if resp.status_code == 200:
+                response = requests.get(cover_url, headers={'User-Agent': 'Mozilla/5.0'})
+                if response.status_code == 200:
                     fname = sanitize_filename(f"{title}_{author}") + os.path.splitext(cover_url)[-1]
                     path = os.path.join(COVERS_DIR, fname)
                     with open(path, 'wb') as imgf:
-                        imgf.write(resp.content)
-                    print(f"Downloaded image to {path}")
+                        imgf.write(response.content)
+                    print(f"Immagine scaricata in {path}")
             except Exception as e:
-                print(f"Download failed for {title}: {e}")
-
+                print(f"Errore download per {title}: {e}")
         else:
-            print(f"No cover found for '{title}'")
+            print(f"Nessuna copertina trovata per '{title}'")
 
-        time.sleep(1)  # be polite
+        time.sleep(1)  # pausa gentile
 
-    # Write back JSON
     with open(BOOKS_JSON, 'w', encoding='utf-8') as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
-    print("books.json updated with cover URLs.")
+    print("books.json aggiornato con le copertine.")
 
 if __name__ == '__main__':
     enrich_covers()
