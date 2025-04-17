@@ -6,13 +6,15 @@ import requests
 from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
 
-# Percorso assoluto della directory
+# Imposta il percorso assoluto alla cartella corrente (quella dello script)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-BOOKS_PATH = os.path.join(BASE_DIR, "data", "books.json")
-COVERS_DIR = os.path.join(BASE_DIR, "data")
+
+# Percorso corretto del JSON e della cartella dove salvare le copertine
+BOOKS_PATH = os.path.join(BASE_DIR, "books.json")
+COVERS_DIR = os.path.join(BASE_DIR)  # salva direttamente in networks/data
 PLACEHOLDER = "https://via.placeholder.com/300x450?text=Nessuna+Copertina"
 
-# Assicurati che la directory esista
+# Assicurati che la cartella esista (in questo caso BASE_DIR è già "data/")
 os.makedirs(COVERS_DIR, exist_ok=True)
 
 def sanitize_filename(text):
@@ -38,12 +40,12 @@ def search_google_image(query):
 def download_image(url, path):
     try:
         r = requests.get(url, timeout=10)
-        if r.status_code == 200 and "image" in r.headers.get("Content-Type", ""):
+        if r.status_code == 200:
             with open(path, "wb") as f:
                 f.write(r.content)
             return True
     except Exception as e:
-        print(f"[!] Errore download immagine: {e}")
+        print(f"[!] Errore download: {e}")
     return False
 
 def main():
@@ -54,28 +56,29 @@ def main():
         if book.get("cover"):
             continue
 
-        title = book.get("title", "").strip()
-        author = book.get("author", "").strip()
+        title = book.get("title", "")
+        author = book.get("author", "")
         if not title:
             continue
 
+        query = f"{title} {author} copertina libro"
         print(f"[🔍] Cerco copertina per: {title}")
 
         filename = sanitize_filename(f"{title}_{author}.jpg")
         local_path = os.path.join(COVERS_DIR, filename)
-        relative_path = f"data/{filename}"
+        relative_path = f"data/{filename}"  # usato nel JSON
 
         if os.path.exists(local_path):
             print(f"[✔️] Copertina già presente")
             book["cover"] = relative_path
             continue
 
-        img_url = search_google_image(f"{title} {author} copertina libro")
+        img_url = search_google_image(query)
         if img_url and download_image(img_url, local_path):
             print(f"[⬇️] Copertina salvata in: {relative_path}")
             book["cover"] = relative_path
         else:
-            print(f"[⛔] Nessuna copertina trovata per: {title}")
+            print(f"[⛔] Nessuna copertina trovata")
             book["cover"] = PLACEHOLDER
 
         time.sleep(1.5)
