@@ -1,73 +1,55 @@
 import json
 import os
-import re
 import time
 import requests
-from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
 
 BOOKS_PATH = os.path.join("data", "books.json")
-HEADERS = {"User-Agent": "Mozilla/5.0"}
+GOOGLE_BOOKS_API = "https://www.googleapis.com/books/v1/volumes?q="
 
-def search_ibs(title, author):
-    query = quote_plus(f"{title} {author}")
-    url = f"https://www.ibs.it/search/?ts=as&query={query}&filterGenre=libri"
+def get_google_books_date(title, author):
+    query = f"intitle:{title} inauthor:{author}"
+    url = GOOGLE_BOOKS_API + quote_plus(query)
+
     try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
-        if res.status_code != 200:
-            return None
-
-        soup = BeautifulSoup(res.text, "html.parser")
-        product_links = soup.select("div.product-info a[href*='/libro/']")
-        if not product_links:
-            return None
-
-        first_link = product_links[0]["href"]
-        full_url = "https://www.ibs.it" + first_link
-        return extract_date_from_ibs(full_url)
-    except:
-        return None
-
-def extract_date_from_ibs(url):
-    try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
-        if res.status_code != 200:
-            return None
-        soup = BeautifulSoup(res.text, "html.parser")
-        info = soup.find("ul", class_="product-main-info-list")
-        if info:
-            text = info.get_text(separator=" ")
-            match = re.search(r'(\d{1,2} \w+ \d{4}|\w+ \d{4}|\d{4})', text)
-            return match.group(1) if match else None
-    except:
-        return None
+        res = requests.get(url, timeout=10)
+        data = res.json()
+        if "items" in data:
+            for item in data["items"]:
+                info = item.get("volumeInfo", {})
+                date = info.get("publishedDate")
+                if date:
+                    return date  # es: "2024-01-05" o "2023"
+    except Exception as e:
+        print(f"[!] Errore per {title}: {e}")
+    return None
 
 def main():
     with open(BOOKS_PATH, "r", encoding="utf-8") as f:
         books = json.load(f)
 
     for book in books:
-        if book.get("releaseDate") and re.match(r"^\d{4}", book["releaseDate"]):
-            continue
+        if book.get("releaseDate") and book["releaseDate"] != "2025-04-17":
+            continue  # Già presente una data vera
 
         title = book.get("title", "")
         author = book.get("author", "")
-        print(f"🔎 Cerco data per: {title}")
+        if not title:
+            continue
 
-        date = search_ibs(title, author)
+        print(f"[🔍] Cerco data pubblicazione: {title}")
+        date = get_google_books_date(title, author)
 
         if date:
-            print(f"✅ Trovata: {date}")
+            print(f"[✅] Trovata: {date}")
             book["releaseDate"] = date
         else:
-            print("❌ Nessuna data trovata")
-
-        time.sleep(1.2)
+            print("[❌] Nessuna data trovata")
+        time.sleep(1)
 
     with open(BOOKS_PATH, "w", encoding="utf-8") as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
-
-    print("🎯 books.json aggiornato con le date di uscita.")
+    print("[🎯] books.json aggiornato con date da Google Books")
 
 if __name__ == "__main__":
     main()
