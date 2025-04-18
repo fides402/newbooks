@@ -18,7 +18,7 @@
       margin-bottom: 2rem;
     }
     .header img {
-      height: 208px; /* 160px + 30% ≈ 208px */
+      height: 208px; /* 30% più grande */
       max-width: 100%;
     }
     .grid {
@@ -29,9 +29,12 @@
     .card {
       background: #fff9e6;
       border-radius: 16px;
-      padding: 1rem;
+      padding: 1rem 1rem 1.5rem;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     .card img {
       max-height: 300px;
@@ -50,13 +53,14 @@
       font-size: 0.9rem;
     }
     .link-button {
-      margin-top: 0.5rem;
+      margin-top: 0.8rem;
       padding: 6px 12px;
       background-color: #382110;
       color: #fff;
       border-radius: 8px;
       font-size: 0.8rem;
       text-decoration: none;
+      display: inline-block;
     }
     .link-button:hover {
       background-color: #7b5934;
