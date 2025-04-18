@@ -36,7 +36,7 @@ jobs:
       run: python data/aggiungi_copertine.py
 
     - name: Aggiorna date di uscita
-      run: python networks/scripts/aggiorna_date_uscita.py
+      run: python networks/scripts/Update update_release_dates.py
 
     - name: Copia JSON e copertine nella cartella /docs
       run: |
