@@ -1,7 +1,7 @@
 import json
 import os
-import time
 import re
+import time
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
@@ -9,58 +9,65 @@ from urllib.parse import quote_plus
 BOOKS_PATH = os.path.join("data", "books.json")
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
-# Fonti scraping-friendly
-SEARCH_SOURCES = [
-    "https://www.ibs.it/libri/search/?query=",
-    "https://www.lafeltrinelli.it/ricerca/"
-]
+def search_ibs(title, author):
+    query = quote_plus(f"{title} {author}")
+    url = f"https://www.ibs.it/search/?ts=as&query={query}&filterGenre=libri"
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        if res.status_code != 200:
+            return None
 
-def sanitize_query(text):
-    return quote_plus(text.replace("\n", " ").strip())
+        soup = BeautifulSoup(res.text, "html.parser")
+        product_links = soup.select("div.product-info a[href*='/libro/']")
+        if not product_links:
+            return None
 
-def extract_date_from_text(text):
-    match = re.search(r'(\d{1,2} \w+ \d{4}|\w+ \d{4}|\d{4})', text)
-    return match.group(1) if match else None
+        first_link = product_links[0]["href"]
+        full_url = "https://www.ibs.it" + first_link
+        return extract_date_from_ibs(full_url)
+    except:
+        return None
 
-def search_release_date(title, author):
-    query = sanitize_query(f"{title} {author}")
-    for base_url in SEARCH_SOURCES:
-        try:
-            url = base_url + query
-            res = requests.get(url, headers=HEADERS, timeout=15)
-            if res.status_code == 200:
-                soup = BeautifulSoup(res.text, "html.parser")
-                snippets = soup.find_all(text=re.compile(r'\b\d{4}\b'))
-                for snippet in snippets:
-                    date = extract_date_from_text(snippet)
-                    if date:
-                        return date
-        except Exception as e:
-            print(f"[!] Errore cercando {title}: {e}")
-    return None
+def extract_date_from_ibs(url):
+    try:
+        res = requests.get(url, headers=HEADERS, timeout=10)
+        if res.status_code != 200:
+            return None
+        soup = BeautifulSoup(res.text, "html.parser")
+        info = soup.find("ul", class_="product-main-info-list")
+        if info:
+            text = info.get_text(separator=" ")
+            match = re.search(r'(\d{1,2} \w+ \d{4}|\w+ \d{4}|\d{4})', text)
+            return match.group(1) if match else None
+    except:
+        return None
 
 def main():
     with open(BOOKS_PATH, "r", encoding="utf-8") as f:
         books = json.load(f)
 
     for book in books:
-        if book.get("releaseDate") and not book["releaseDate"].startswith("202"):
+        if book.get("releaseDate") and re.match(r"^\d{4}", book["releaseDate"]):
             continue
+
         title = book.get("title", "")
         author = book.get("author", "")
-        print(f"[📅] Cerco data di uscita per: {title}")
-        release_date = search_release_date(title, author)
-        if release_date:
-            print(f"[✅] Trovata: {release_date}")
-            book["releaseDate"] = release_date
+        print(f"🔎 Cerco data per: {title}")
+
+        date = search_ibs(title, author)
+
+        if date:
+            print(f"✅ Trovata: {date}")
+            book["releaseDate"] = date
         else:
-            print(f"[❌] Nessuna data trovata")
-        time.sleep(1.5)
+            print("❌ Nessuna data trovata")
+
+        time.sleep(1.2)
 
     with open(BOOKS_PATH, "w", encoding="utf-8") as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
 
-    print("[🎯] Aggiornamento completato.")
+    print("🎯 books.json aggiornato con le date di uscita.")
 
 if __name__ == "__main__":
     main()
