@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>📚 Nuovi Libri</title>
+  <title>Nuovi Libri</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -12,78 +12,76 @@
       color: #2e1e0f;
       padding: 2rem;
     }
-
-    .logo {
-      height: 130px;
+    .header {
+      display: flex;
+      align-items: flex-start;
       margin-bottom: 2rem;
     }
-
+    .header img {
+      height: 208px; /* 30% più grande rispetto a 160px */
+      max-width: 100%;
+    }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1rem;
     }
-
     .card {
       background: #fff9e6;
       border-radius: 16px;
-      padding: 1rem;
+      padding: 1rem 1rem 1.5rem;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      justify-content: space-between;
     }
-
     .card img {
-      width: auto;
-      max-height: 220px;
+      max-height: 200px;
       object-fit: contain;
-      margin-bottom: 0.7rem;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+      margin-bottom: 0.8rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      max-width: 100%;
     }
-
     .card h2 {
-      font-size: 1rem;
-      margin: 0.3rem 0;
+      font-size: 1.1rem;
+      margin: 0.2rem 0;
     }
-
     .card p {
-      font-size: 0.85rem;
       margin: 0.1rem 0;
+      font-size: 0.9rem;
     }
-
     .link-button {
-      margin-top: 0.5rem;
-      padding: 4px 10px;
+      margin-top: 0.8rem;
+      padding: 6px 12px;
       background-color: #382110;
       color: #fff;
-      border-radius: 6px;
-      font-size: 0.72rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
       text-decoration: none;
-      white-space: nowrap;
-      max-width: fit-content;
+      display: inline-block;
     }
-
     .link-button:hover {
       background-color: #7b5934;
     }
   </style>
 </head>
 <body>
-  <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" class="logo"/>
+  <div class="header">
+    <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" />
+  </div>
 
   <div class="grid" id="book-grid">Caricamento...</div>
 
   <script>
     function generateAnnaLink(book) {
       const base = "https://annas-archive.org/search?q=";
-      const query = `${book.title || ""} ${book.author || ""}`;
+      const query = (book.title || '') + (book.author ? " " + book.author : "");
       return base + encodeURIComponent(query.trim());
     }
 
-    fetch('./books.json')
+    fetch('data/books.json')
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('book-grid');
@@ -102,12 +100,12 @@
 
         container.innerHTML = uniqueBooks.map(book => `
           <div class="card">
-            <img src="${book.cover || 'https://via.placeholder.com/200x300?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
+            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
             <h2>${book.title}</h2>
             <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
             <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
             <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            <a class="link-button" href="${book.annas_link || generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
+            <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
           </div>
         `).join('');
       })
