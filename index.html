@@ -18,7 +18,7 @@
       margin-bottom: 2rem;
     }
     .header img {
-      height: 208px; /* 30% più grande rispetto a 160px */
+      height: 208px;
       max-width: 100%;
     }
     .grid {
@@ -54,13 +54,16 @@
     }
     .link-button {
       margin-top: 0.8rem;
-      padding: 6px 12px;
+      padding: 5px 8px;
       background-color: #382110;
       color: #fff;
-      border-radius: 8px;
-      font-size: 0.8rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
       text-decoration: none;
       display: inline-block;
+      white-space: nowrap;
+      min-width: auto;
+      width: fit-content;
     }
     .link-button:hover {
       background-color: #7b5934;
@@ -105,7 +108,7 @@
             <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
             <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
             <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
+            <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
           </div>
         `).join('');
       })
