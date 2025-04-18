@@ -84,25 +84,35 @@
       font-size: 0.7rem;
       font-weight: bold;
     }
+
     #scrollTopBtn {
       display: none;
       position: fixed;
       bottom: 20px;
       right: 20px;
       z-index: 99;
-      border: none;
-      outline: none;
       background-color: #382110;
-      color: white;
-      cursor: pointer;
-      padding: 12px 16px;
+      border: none;
       border-radius: 50%;
-      font-size: 20px;
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
       transition: background-color 0.3s, opacity 0.3s;
     }
+
     #scrollTopBtn:hover {
       background-color: #7b5934;
+    }
+
+    .arrow-up {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 14px solid white;
+      margin: auto;
+      margin-top: 14px;
     }
   </style>
 </head>
@@ -117,7 +127,9 @@
 
   <div class="grid" id="book-grid">Caricamento...</div>
 
-  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su">↑</button>
+  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su">
+    <div class="arrow-up"></div>
+  </button>
 
   <script>
     function generateAnnaLink(book) {
@@ -137,8 +149,6 @@
           container.innerHTML = '<p>Nessun libro trovato.</p>';
           return;
         }
-
-        const today = new Date().toISOString().slice(0, 10);
 
         container.innerHTML = data.map(book => {
           const isNew = book.addedToday === true;
@@ -160,7 +170,6 @@
         console.error(err);
       });
 
-    // Scroll to top button logic
     const scrollTopBtn = document.getElementById("scrollTopBtn");
 
     window.onscroll = function () {
