@@ -35,9 +35,6 @@ jobs:
     - name: Scarica copertine
       run: python data/aggiungi_copertine.py
 
-    - name: Aggiorna date di uscita
-      run: python scripts/update_release_dates.py
-
     - name: Copia JSON e copertine nella cartella /docs
       run: |
         mkdir -p docs/book_covers
