@@ -9,6 +9,7 @@ from urllib.parse import quote_plus
 BOOKS_PATH = os.path.join("data", "books.json")
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
+# Fonti scraping-friendly
 SEARCH_SOURCES = [
     "https://www.ibs.it/libri/search/?query=",
     "https://www.lafeltrinelli.it/ricerca/"
@@ -58,6 +59,7 @@ def main():
 
     with open(BOOKS_PATH, "w", encoding="utf-8") as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
+
     print("[🎯] Aggiornamento completato.")
 
 if __name__ == "__main__":
