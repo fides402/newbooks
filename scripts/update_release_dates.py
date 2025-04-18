@@ -45,23 +45,19 @@ def main():
     for book in books:
         if book.get("releaseDate") and not book["releaseDate"].startswith("202"):
             continue
-
         title = book.get("title", "")
         author = book.get("author", "")
         print(f"[📅] Cerco data di uscita per: {title}")
         release_date = search_release_date(title, author)
-
         if release_date:
             print(f"[✅] Trovata: {release_date}")
             book["releaseDate"] = release_date
         else:
             print(f"[❌] Nessuna data trovata")
-
         time.sleep(1.5)
 
     with open(BOOKS_PATH, "w", encoding="utf-8") as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
-
     print("[🎯] Aggiornamento completato.")
 
 if __name__ == "__main__":
