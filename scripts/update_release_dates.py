@@ -1,42 +1,51 @@
-import json
 import os
-import time
+import json
 import re
+import time
 import requests
 from bs4 import BeautifulSoup
 from urllib.parse import quote_plus
 
 BOOKS_PATH = os.path.join("data", "books.json")
-HEADERS = { "User-Agent": "Mozilla/5.0" }
+HEADERS = {"User-Agent": "Mozilla/5.0"}
 
-def search_goodreads_link(title, author):
-    query = f"{title} {author} site:goodreads.com/book/show"
-    url = f"https://www.google.com/search?q={quote_plus(query)}"
-    try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
-        soup = BeautifulSoup(res.text, "html.parser")
-        for a in soup.select("a"):
-            href = a.get("href")
-            if href and "goodreads.com/book/show" in href:
-                match = re.search(r"https://www\.goodreads\.com/book/show/\d+", href)
-                if match:
-                    return match.group(0)
-    except Exception as e:
-        print(f"[!] Errore ricerca Goodreads: {e}")
-    return None
+DATE_LABELS = [
+    "Originally published",
+    "First published",
+    "Publication date",
+    "Published on",
+    "Pubblicato il",
+    "Prima pubblicazione"
+]
 
-def extract_date_from_goodreads(url):
+def search_google_info_box(title, author):
+    query = quote_plus(f"{title} {author}")
+    url = f"https://www.google.com/search?q={query}"
+
     try:
-        res = requests.get(url, headers=HEADERS, timeout=10)
-        soup = BeautifulSoup(res.text, "html.parser")
-        details = soup.select_one("#details")
-        if details:
-            text = details.get_text(separator=" ").strip()
-            match = re.search(r'Published\s+([A-Za-z]+\s+\d{1,2}[a-z]{0,2},?\s+\d{4})', text)
+        response = requests.get(url, headers=HEADERS, timeout=10)
+        soup = BeautifulSoup(response.text, "html.parser")
+
+        # Cerca in tutti i div visibili
+        for label in DATE_LABELS:
+            elements = soup.find_all(text=re.compile(label, re.IGNORECASE))
+            for el in elements:
+                parent = el.find_parent()
+                if parent and parent.find_next_sibling():
+                    date_text = parent.find_next_sibling().get_text(strip=True)
+                    if re.search(r'\d{4}', date_text):
+                        return date_text
+
+        # Fallback: cerca righe con etichetta + data
+        full_text = soup.get_text(separator="\n")
+        for label in DATE_LABELS:
+            match = re.search(fr"{label}.{{0,40}}(\d{{1,2}} \w+ \d{{4}}|\w+ \d{{4}}|\d{{4}})", full_text, re.IGNORECASE)
             if match:
                 return match.group(1)
+
     except Exception as e:
-        print(f"[!] Errore parsing Goodreads: {e}")
+        print(f"[!] Errore per {title}: {e}")
+
     return None
 
 def main():
@@ -44,32 +53,28 @@ def main():
         books = json.load(f)
 
     for book in books:
-        if book.get("releaseDate") and not book["releaseDate"].startswith("2025"):
-            continue
-
         title = book.get("title", "")
         author = book.get("author", "")
-        if not title:
+        release_date = book.get("releaseDate", "")
+
+        if release_date and not release_date.startswith("202"):
             continue
 
-        print(f"[🔍] Cerco: {title} di {author}")
-        gr_link = search_goodreads_link(title, author)
-        if not gr_link:
-            print("[❌] Goodreads link non trovato")
-            continue
+        print(f"[🔍] Cerco data per: {title} di {author}")
+        date_found = search_google_info_box(title, author)
 
-        date = extract_date_from_goodreads(gr_link)
-        if date:
-            print(f"[✅] Data trovata: {date}")
-            book["releaseDate"] = date
+        if date_found:
+            print(f"[📅] Trovata: {date_found}")
+            book["releaseDate"] = date_found
         else:
-            print("[❌] Nessuna data trovata")
+            print(f"[❌] Nessuna data trovata")
 
         time.sleep(1.5)
 
     with open(BOOKS_PATH, "w", encoding="utf-8") as f:
         json.dump(books, f, ensure_ascii=False, indent=2)
-    print("[🎯] books.json aggiornato con date da Goodreads")
+
+    print("[✅] books.json aggiornato con le date trovate da Google.")
 
 if __name__ == "__main__":
     main()
