@@ -14,7 +14,7 @@
     }
 
     .logo {
-      height: 130px; /* ingrandito del 30% */
+      height: 130px;
       margin-bottom: 2rem;
     }
 
@@ -37,7 +37,7 @@
 
     .card img {
       width: auto;
-      max-height: 220px; /* più piccole */
+      max-height: 220px;
       object-fit: contain;
       margin-bottom: 0.7rem;
       border-radius: 6px;
@@ -56,13 +56,14 @@
 
     .link-button {
       margin-top: 0.5rem;
-      padding: 4px 6px;
+      padding: 4px 10px;
       background-color: #382110;
       color: #fff;
       border-radius: 6px;
       font-size: 0.72rem;
       text-decoration: none;
       white-space: nowrap;
+      max-width: fit-content;
     }
 
     .link-button:hover {
@@ -106,7 +107,7 @@
             <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
             <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
             <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            <a class="link-button" href="${book.annas_link || generateAnnaLink(book)}" target="_blank">Anna's Archive</a>
+            <a class="link-button" href="${book.annas_link || generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
           </div>
         `).join('');
       })
