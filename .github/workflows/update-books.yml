@@ -1,13 +1,12 @@
-update-books
+name: update-books
 
-# ✅ Consenti il permesso di scrittura al contenuto del repo
 permissions:
   contents: write
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * *'
+    - cron: '0 4 * * *'  # Ogni giorno alle 4:00 UTC
 
 jobs:
   build:
@@ -17,7 +16,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
-        persist-credentials: true  # ✅ mantiene i token per il push
+        persist-credentials: true
 
     - name: Setup Python
       uses: actions/setup-python@v4
@@ -33,6 +32,9 @@ jobs:
     - name: Aggiungi link Anna's Archive
       run: python scripts/aggiungi_annas_archive.py
 
+    - name: Aggiorna date di uscita
+      run: python scripts/aggiorna_date_uscita.py
+
     - name: Scarica copertine (usando script in /data)
       run: python data/aggiungi_copertine.py
 
@@ -46,7 +48,7 @@ jobs:
       run: |
         git config --global user.name "github-actions"
         git config --global user.email "actions@github.com"
-        git add docs/books.json docs/book_covers/*.jpg || echo "Niente da aggiungere"
-        git add data/books.json || echo "books.json già aggiornato"
-        git commit -m "Aggiorna dati e copertine" || echo "Niente da commitare"
+        git add docs/books.json docs/book_covers/*.jpg || echo "Niente immagini da aggiungere"
+        git add data/books.json || echo "Nessun books.json aggiornato"
+        git commit -m "🔄 Aggiorna dati, copertine e date di uscita" || echo "Niente da commitare"
         git push
