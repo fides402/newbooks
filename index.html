@@ -84,6 +84,29 @@
       font-size: 0.7rem;
       font-weight: bold;
     }
+
+    /* Scroll to top button */
+    #scrollTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99;
+      border: none;
+      outline: none;
+      background-color: #382110;
+      color: white;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      font-size: 18px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    #scrollTopBtn:hover {
+      background-color: #7b5934;
+    }
   </style>
 </head>
 <body>
@@ -96,6 +119,9 @@
   </div>
 
   <div class="grid" id="book-grid">Caricamento...</div>
+
+  <!-- Scroll-to-top button -->
+  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su">↑</button>
 
   <script>
     function generateAnnaLink(book) {
@@ -116,8 +142,6 @@
           return;
         }
 
-        const today = new Date().toISOString().slice(0, 10);
-
         container.innerHTML = data.map(book => {
           const isNew = book.addedToday === true;
           return `
@@ -137,6 +161,17 @@
         document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
         console.error(err);
       });
+
+    // Scroll to top button logic
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+
+    window.onscroll = function () {
+      scrollTopBtn.style.display = window.scrollY > 300 ? "block" : "none";
+    };
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   </script>
 </body>
 </html>
