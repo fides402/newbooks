@@ -92,27 +92,12 @@
       z-index: 99;
       border: none;
       outline: none;
-      background-color: #382110;
-      cursor: pointer;
+      background: url('dc471f2b-1964-43ac-9a53-7b938ea8cdaf.png') no-repeat center center;
+      background-size: cover;
       width: 52px;
       height: 52px;
       border-radius: 50%;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #scrollTopBtn::before {
-      content: "";
-      display: block;
-      width: 0;
-      height: 0;
-      border-left: 18px solid transparent;
-      border-right: 18px solid transparent;
-      border-bottom: 24px solid #fdf6e3;
-    }
-    #scrollTopBtn:hover {
-      background-color: #7b5934;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -177,11 +162,9 @@
       });
 
     const scrollTopBtn = document.getElementById("scrollTopBtn");
-
     window.onscroll = function () {
-      scrollTopBtn.style.display = window.scrollY > 300 ? "flex" : "none";
+      scrollTopBtn.style.display = window.scrollY > 300 ? "block" : "none";
     };
-
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
