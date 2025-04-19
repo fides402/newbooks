@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nuovi Libri di Oggi</title>
+  <title>Nuovi Libri</title>
+  <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
     body {
@@ -14,12 +15,19 @@
     }
     .header {
       display: flex;
-      align-items: flex-start;
+      justify-content: space-between;
+      align-items: center;
       margin-bottom: 2rem;
     }
     .header img {
       height: 208px;
       max-width: 100%;
+    }
+    .header nav a {
+      margin-left: 1rem;
+      text-decoration: none;
+      color: #382110;
+      font-weight: bold;
     }
     .grid {
       display: grid;
@@ -29,12 +37,9 @@
     .card {
       background: #fff9e6;
       border-radius: 16px;
-      padding: 1rem 1rem 1.5rem;
+      padding: 1rem;
       box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       text-align: center;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
       position: relative;
     }
     .card img {
@@ -42,7 +47,6 @@
       object-fit: contain;
       margin-bottom: 0.8rem;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       max-width: 100%;
     }
     .card h2 {
@@ -62,7 +66,6 @@
       font-size: 0.75rem;
       text-decoration: none;
       display: inline-block;
-      white-space: nowrap;
       width: fit-content;
       margin-left: auto;
       margin-right: auto;
@@ -72,24 +75,49 @@
     }
     .new-badge {
       position: absolute;
-      top: 10px;
-      right: 10px;
-      background: green;
+      top: 8px;
+      right: 8px;
+      background-color: #2ecc71;
       color: white;
-      font-size: 0.65rem;
-      padding: 2px 6px;
+      padding: 4px 6px;
       border-radius: 12px;
+      font-size: 0.7rem;
       font-weight: bold;
+    }
+    #scrollTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99;
+      border: none;
+      outline: none;
+      background-color: #382110;
+      color: white;
+      cursor: pointer;
+      padding: 12px 16px;
+      border-radius: 50%;
+      font-size: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background-color 0.3s, opacity 0.3s;
+    }
+    #scrollTopBtn:hover {
+      background-color: #7b5934;
     }
   </style>
 </head>
 <body>
   <div class="header">
     <img src="logo_nuovi_libri.png" alt="Logo Nuovi Libri" />
+    <nav>
+      <a href="index.html">Catalogo</a>
+      <a href="new_today.html">New Today</a>
+    </nav>
   </div>
 
-  <h2>Libri aggiunti oggi</h2>
   <div class="grid" id="book-grid">Caricamento...</div>
+
+  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su">↑</button>
 
   <script>
     function generateAnnaLink(book) {
@@ -105,29 +133,38 @@
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('book-grid');
-        const booksToday = data.filter(book => book.addedToday);
-
-        if (!Array.isArray(booksToday) || booksToday.length === 0) {
-          container.innerHTML = '<p>Nessun libro aggiunto oggi.</p>';
+        if (!Array.isArray(data) || data.length === 0) {
+          container.innerHTML = '<p>Nessun libro trovato.</p>';
           return;
         }
 
-        container.innerHTML = booksToday.map(book => `
-          <div class="card">
-            <span class="new-badge">NEW</span>
-            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
-            <h2>${book.title}</h2>
-            <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
-            <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
-            <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
-          </div>
-        `).join('');
+        container.innerHTML = data.map(book => {
+          const isNew = book.addedToday === true;
+          return `
+            <div class="card">
+              ${isNew ? '<div class="new-badge">NEW</div>' : ''}
+              <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
+              <h2>${book.title}</h2>
+              <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
+              <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
+              <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
+              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
+            </div>
+          `;
+        }).join('');
       })
       .catch(err => {
         document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
         console.error(err);
       });
+
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+    window.onscroll = function () {
+      scrollTopBtn.style.display = window.scrollY > 300 ? "block" : "none";
+    };
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   </script>
 </body>
 </html>
