@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>New Today</title>
+  <title>Nuovi Libri</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -84,6 +84,21 @@
       font-size: 0.7rem;
       font-weight: bold;
     }
+    #scrollTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99;
+      border: none;
+      outline: none;
+      background: url('dc471f2b-1964-43ac-9a53-7b938ea8cdaf.png') no-repeat center center;
+      background-size: cover;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -96,6 +111,8 @@
   </div>
 
   <div class="grid" id="book-grid">Caricamento...</div>
+
+  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su"></button>
 
   <script>
     function generateAnnaLink(book) {
@@ -116,30 +133,41 @@
           return;
         }
 
-        const today = new Date().toISOString().slice(0, 10);
-        const newBooks = data.filter(book => book.addedToday === true);
+        const seen = new Set();
+        const uniqueBooks = data.filter(book => {
+          const key = book.title + '|' + book.author;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
 
-        if (newBooks.length === 0) {
-          container.innerHTML = '<p>Nessun nuovo libro aggiunto oggi.</p>';
-          return;
-        }
-
-        container.innerHTML = newBooks.map(book => `
-          <div class="card">
-            <div class="new-badge">NEW</div>
-            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
-            <h2>${book.title}</h2>
-            <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
-            <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
-            <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-            <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
-          </div>
-        `).join('');
+        container.innerHTML = uniqueBooks.map(book => {
+          const isNew = book.addedToday === true;
+          return `
+            <div class="card">
+              ${isNew ? '<div class="new-badge">NEW</div>' : ''}
+              <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
+              <h2>${book.title}</h2>
+              <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
+              <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
+              <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
+              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
+            </div>
+          `;
+        }).join('');
       })
       .catch(err => {
         document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
         console.error(err);
       });
+
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+    window.onscroll = function () {
+      scrollTopBtn.style.display = window.scrollY > 300 ? "block" : "none";
+    };
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   </script>
 </body>
 </html>
