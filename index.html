@@ -90,16 +90,27 @@
       bottom: 20px;
       right: 20px;
       z-index: 99;
+      border: none;
+      outline: none;
       background-color: #382110;
+      cursor: pointer;
       width: 48px;
       height: 48px;
-      border: none;
       border-radius: 50%;
-      cursor: pointer;
       box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background-color 0.3s, opacity 0.3s;
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+    #scrollTopBtn::before {
+      content: "";
+      display: block;
+      width: 0;
+      height: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 14px solid #fdf6e3;
     }
     #scrollTopBtn:hover {
       background-color: #7b5934;
@@ -117,11 +128,7 @@
 
   <div class="grid" id="book-grid">Caricamento...</div>
 
-  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su">
-    <svg viewBox="0 0 24 24" width="24" height="24">
-      <path fill="#fdf6e3" d="M12 8l-6 6h12z"/>
-    </svg>
-  </button>
+  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su"></button>
 
   <script>
     function generateAnnaLink(book) {
@@ -141,6 +148,8 @@
           container.innerHTML = '<p>Nessun libro trovato.</p>';
           return;
         }
+
+        const today = new Date().toISOString().slice(0, 10);
 
         container.innerHTML = data.map(book => {
           const isNew = book.addedToday === true;
@@ -162,10 +171,13 @@
         console.error(err);
       });
 
+    // Scroll to top button logic
     const scrollTopBtn = document.getElementById("scrollTopBtn");
+
     window.onscroll = function () {
-      scrollTopBtn.style.display = window.scrollY > 300 ? "block" : "none";
+      scrollTopBtn.style.display = window.scrollY > 300 ? "flex" : "none";
     };
+
     function scrollToTop() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
