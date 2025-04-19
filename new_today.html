@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nuovi Libri</title>
+  <title>New Today</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -84,6 +84,30 @@
       font-size: 0.7rem;
       font-weight: bold;
     }
+
+    /* SCROLL BUTTON */
+    #scrollTopBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 99;
+      border: none;
+      outline: none;
+      background-color: #382110;
+      cursor: pointer;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      transition: background-color 0.3s, opacity 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #scrollTopBtn:hover {
+      background-color: #7b5934;
+    }
   </style>
 </head>
 <body>
@@ -96,6 +120,13 @@
   </div>
 
   <div class="grid" id="book-grid">Caricamento...</div>
+
+  <!-- SCROLL UP BUTTON -->
+  <button onclick="scrollToTop()" id="scrollTopBtn" title="Torna su">
+    <svg viewBox="0 0 24 24" width="24" height="24">
+      <path d="M12 8l-6 6h12z" fill="#fdf6e3"/>
+    </svg>
+  </button>
 
   <script>
     function generateAnnaLink(book) {
@@ -116,27 +147,33 @@
           return;
         }
 
-        const today = new Date().toISOString().slice(0, 10);
+        const newBooks = data.filter(book => book.addedToday === true);
 
-        container.innerHTML = data.map(book => {
-          const isNew = book.addedToday === true;
-          return `
-            <div class="card">
-              ${isNew ? '<div class="new-badge">NEW</div>' : ''}
-              <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
-              <h2>${book.title}</h2>
-              <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
-              <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
-              <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
-              <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
-            </div>
-          `;
-        }).join('');
+        container.innerHTML = newBooks.map(book => `
+          <div class="card">
+            <div class="new-badge">NEW</div>
+            <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
+            <h2>${book.title}</h2>
+            <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
+            <p><strong>Categoria:</strong> ${book.categoria || 'N/D'}</p>
+            <p><strong>Data:</strong> ${book.releaseDate || 'N/D'}</p>
+            <a class="link-button" href="${generateAnnaLink(book)}" target="_blank">Anna’s Archive</a>
+          </div>
+        `).join('');
       })
       .catch(err => {
         document.getElementById('book-grid').innerHTML = '<p>Errore nel caricamento dei dati.</p>';
         console.error(err);
       });
+
+    // Scroll logic
+    const scrollTopBtn = document.getElementById("scrollTopBtn");
+    window.onscroll = function () {
+      scrollTopBtn.style.display = window.scrollY > 300 ? "flex" : "none";
+    };
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   </script>
 </body>
 </html>
