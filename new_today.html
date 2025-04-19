@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Nuovi Libri</title>
+  <title>New Today</title>
   <link rel="icon" type="image/png" href="favicon.png">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -133,19 +133,12 @@
           return;
         }
 
-        const seen = new Set();
-        const uniqueBooks = data.filter(book => {
-          const key = book.title + '|' + book.author;
-          if (seen.has(key)) return false;
-          seen.add(key);
-          return true;
-        });
+        const newBooks = data.filter(book => book.addedToday);
 
-        container.innerHTML = uniqueBooks.map(book => {
-          const isNew = book.addedToday === true;
+        container.innerHTML = newBooks.map(book => {
           return `
             <div class="card">
-              ${isNew ? '<div class="new-badge">NEW</div>' : ''}
+              <div class="new-badge">NEW</div>
               <img src="${book.cover || 'https://via.placeholder.com/300x450?text=Nessuna+Copertina'}" alt="Copertina di ${book.title}">
               <h2>${book.title}</h2>
               <p><strong>Autore:</strong> ${book.author || 'N/D'}</p>
